@@ -1066,13 +1066,14 @@ async function cargarDesdeSheet() {
         id: getAnyV(r, ['ID', 'NÚMERO', 'NUMERO']) || (i + 1),
 
         destino:  getAnyV(r, ['DESTINO']),
-        entrega:  getAnyV(r, ['ENTREGA', 'ENTREGADO A', 'ENTREGADO']),
+        entrega:  getAnyV(r, ['ENTREGA', 'ENTREGADO A', 'ENTREGADO', 'ENTREGA1']),
 
-        fechasal: getAnyV(r, ['FECHA SALIDA', 'FECHA DE SALIDA', 'FECHA', 'FECHA_SALIDA']),
+        fechasal: getAnyV(r, ['FECHA SALIDA', 'FECHA DE SALIDA', 'FECHA', 'FECHA_SALIDA', 'FECHA SALIDA 1']),
         hora1:    getAnyV(r, ['HORA', 'HORA1', 'HORA SALIDA', 'HORARIO']),
 
-        asunto1:  getAnyV(r, ['ASUNTO', 'ASUNTO1', 'ASUNTO DESTINO']),
-        area1:    getAnyV(r, ['AREA', 'ÁREA', 'AREA1', 'DEPARTAMENTO']),
+        asunto1:  getAnyV(r, ['ASUNTO', 'ASUNTO1', 'ASUNTO DESTINO', 'ASUNTO DESTINO1']),
+        area1:    getAnyV(r, ['AREA', 'ÁREA', 'AREA1', 'DEPARTAMENTO', 'DEPARTAMENTO1']),
+
 
         _sheetRow: i + 2
       }));
@@ -1627,6 +1628,7 @@ function renderNS() {
     tr.innerHTML=`<td>${r.id}</td><td>${r.destino||''}</td><td>${r.entrega||''}</td>
       <td>${r.fechasal||''}</td><td>${horaFmt}</td><td>${r.asunto1||''}</td><td>${r.area1||''}</td>
       <td class="text-center text-nowrap">
+
         ${isAdmin?`<button class="btn-accion edit" onclick="editarNS(${r.id})"><i class="bi bi-pencil-square"></i></button>
         <button class="btn-accion del" onclick="confirmarBorrar(()=>borrarNS(${r.id}))"><i class="bi bi-trash"></i></button>`:
         `<button class="btn-accion edit" onclick="editarNS(${r.id})"><i class="bi bi-eye"></i></button>`}
