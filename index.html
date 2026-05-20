@@ -35,7 +35,7 @@
     width: 380px; padding: 48px 40px;
     text-align: center;
   }
-  .login-card img {height: 87.5px; width: auto; max-width: 100%; margin: 0 auto 20px; display: block; }
+.login-card img { height: 87.5px; width: auto; max-width: 100%; margin: 0 auto 20px; display: block; }
   .login-card h2 { font-family: 'Barlow Condensed', sans-serif; color: var(--azul); font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
   .login-card .sub { color: #888; font-size: .85rem; margin-bottom: 28px; }
   .login-card .form-control { border-radius: 8px; font-size:.95rem; padding:.55rem 1rem; }
@@ -2420,17 +2420,35 @@ function importarDatos(inp){
   reader.readAsText(f);
 }
 
-// Resetear modales al abrir Agregar nuevos
+// Resetear modales: separar claramente "Agregar" vs "Editar"
+// Caso: si se abre el modal con ne_id vacío => Agregar (limpiar)
+// Caso: si ne_id tiene valor => Editar (no tocar valores)
 document.getElementById('modalNE').addEventListener('show.bs.modal', function(){
-  if(!document.getElementById('ne_id').value){
+  const modal = this;
+  const neIdEl = document.getElementById('ne_id');
+  const neIdVal = neIdEl ? neIdEl.value : '';
+
+  if(!neIdVal){
     document.getElementById('tituloModalNE').textContent='Nueva Nota de Entrada';
-    document.getElementById('ne_id').value='';
+    neIdEl.value='';
     ['procedencia','asunto','area','recibe','fechaing','hora','fechalim','tramiteRes','fechares','respon','observacion']
       .forEach(f=>document.getElementById('ne_'+f).value='');
     document.getElementById('ne_estado').value='';
   }
+
 });
-['modalNS','modalV','modalEX','modalL','modalSD'].forEach(id=>{
+document.getElementById('modalNS').addEventListener('show.bs.modal', function(){
+  const nsIdEl = document.getElementById('ns_id');
+  const nsIdVal = nsIdEl ? nsIdEl.value : '';
+
+  if(!nsIdVal){
+    document.getElementById('tituloModalNS').textContent='Nueva Nota de Salida';
+    nsIdEl.value='';
+    ['destino','entrega','fechasal','hora1','asunto1','area1'].forEach(f=>document.getElementById('ns_'+f).value='');
+  }
+});
+
+['modalV','modalEX','modalL','modalSD'].forEach(id=>{
   document.getElementById(id).addEventListener('hidden.bs.modal',()=>{
     document.querySelectorAll('#'+id+' input, #'+id+' select, #'+id+' textarea').forEach(el=>el.value='');
   });
