@@ -32,10 +32,25 @@
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0,0,0,.4);
-    width: 380px; padding: 48px 40px;
+    width: 380px; padding: 52px 40px; /* un poco más de alto para que el logo grande entre bien */
     text-align: center;
   }
-.login-card img { height: 87.5px; width: auto; max-width: 100%; margin: 0 auto 20px; display: block; }
+
+  .login-casrdg { height: 500px; width: auto; max-width: 100%; margin: 0 auto 20px; display: block; }
+
+  /* Logo del login: centrado dentro del recuadro blanco, sin sobresalir */
+.login-card img[alt="Logo"]{
+    display:block;
+    width: 380px; /* agrandar mas manteniendo el recuadro */
+    height: 190px;
+
+    object-fit: contain; /* evita que se recorte */
+    object-position: center;
+    margin: 0 auto 20px;
+    max-width: 100%; /* pero no supera el ancho del recuadro */
+  }
+
+
   .login-card h2 { font-family: 'Barlow Condensed', sans-serif; color: var(--azul); font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
   .login-card .sub { color: #888; font-size: .85rem; margin-bottom: 28px; }
   .login-card .form-control { border-radius: 8px; font-size:.95rem; padding:.55rem 1rem; }
@@ -280,7 +295,7 @@
           <h2><i class="bi bi-envelope-arrow-down-fill me-2"></i>Notas de Entrada</h2>
           <div class="actions">
             <input type="text" id="buscarNE" class="form-control form-control-sm" placeholder="🔍 Buscar..." style="width:200px" oninput="filtrarTabla('tbNE','buscarNE')">
-            <button class="btn btn-primary btn-sm" onclick="abrirModal('modalNE')"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+<button class="btn btn-primary btn-sm" onclick="agregarNE()"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
           </div>
         </div>
         <div class="table-responsive">
@@ -302,7 +317,7 @@
           <h2><i class="bi bi-envelope-arrow-up-fill me-2"></i>Notas de Salida</h2>
           <div class="actions">
             <input type="text" id="buscarNS" class="form-control form-control-sm" placeholder="🔍 Buscar..." style="width:200px" oninput="filtrarTabla('tbNS','buscarNS')">
-            <button class="btn btn-primary btn-sm" onclick="abrirModal('modalNS')"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+<button class="btn btn-primary btn-sm" onclick="agregarNS()"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
           </div>
         </div>
         <div class="table-responsive">
@@ -1563,6 +1578,15 @@ function guardarNE() {
   mostrarToast(idInt?'Registro actualizado':'Registro guardado');
 }
 
+function agregarNE() {
+  document.getElementById('tituloModalNE').textContent='Nueva Nota de Entrada';
+  document.getElementById('ne_id').value='';
+  ['procedencia','asunto','area','recibe','fechaing','hora','fechalim','tramiteRes','fechares','respon','observacion']
+    .forEach(f=>document.getElementById('ne_'+f).value='');
+  document.getElementById('ne_estado').value='';
+  abrirModal('modalNE');
+}
+
 function editarNE(id) {
   const r = notasEnt.find(x=>x.id===id);
   document.getElementById('tituloModalNE').textContent = 'Editar Nota de Entrada';
@@ -1673,6 +1697,14 @@ function guardarNS() {
   cerrarModal('modalNS');
   mostrarToast(idInt?'Registro actualizado':'Registro guardado');
 }
+function agregarNS() {
+  document.getElementById('tituloModalNS').textContent='Nueva Nota de Salida';
+  document.getElementById('ns_id').value='';
+  ['destino','entrega','fechasal','hora1','asunto1','area1']
+    .forEach(f=>document.getElementById('ns_'+f).value='');
+  abrirModal('modalNS');
+}
+
 function editarNS(id) {
   const r=notasSal.find(x=>x.id===id);
   document.getElementById('tituloModalNS').textContent='Editar Nota de Salida';
@@ -2420,33 +2452,9 @@ function importarDatos(inp){
   reader.readAsText(f);
 }
 
-// Resetear modales: separar claramente "Agregar" vs "Editar"
-// Caso: si se abre el modal con ne_id vacío => Agregar (limpiar)
-// Caso: si ne_id tiene valor => Editar (no tocar valores)
-document.getElementById('modalNE').addEventListener('show.bs.modal', function(){
-  const modal = this;
-  const neIdEl = document.getElementById('ne_id');
-  const neIdVal = neIdEl ? neIdEl.value : '';
+// Resetear modales: se controla desde los botones (agregarNE/agregarNS y editarNE/editarNS)
+// De esta forma no dependemos del show.bs.modal para distinguir modo.
 
-  if(!neIdVal){
-    document.getElementById('tituloModalNE').textContent='Nueva Nota de Entrada';
-    neIdEl.value='';
-    ['procedencia','asunto','area','recibe','fechaing','hora','fechalim','tramiteRes','fechares','respon','observacion']
-      .forEach(f=>document.getElementById('ne_'+f).value='');
-    document.getElementById('ne_estado').value='';
-  }
-
-});
-document.getElementById('modalNS').addEventListener('show.bs.modal', function(){
-  const nsIdEl = document.getElementById('ns_id');
-  const nsIdVal = nsIdEl ? nsIdEl.value : '';
-
-  if(!nsIdVal){
-    document.getElementById('tituloModalNS').textContent='Nueva Nota de Salida';
-    nsIdEl.value='';
-    ['destino','entrega','fechasal','hora1','asunto1','area1'].forEach(f=>document.getElementById('ns_'+f).value='');
-  }
-});
 
 ['modalV','modalEX','modalL','modalSD'].forEach(id=>{
   document.getElementById(id).addEventListener('hidden.bs.modal',()=>{
