@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Registro – Dirección de Educación Técnica</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --azul: #1a3a5c;
+    --azul-med: #2563a8;
+    --azul-claro: #e8f0fb;
+    --acento: #f0a500;
+    --fondo: #f4f6fa;
+    --sidebar-w: 220px;
+    --header-h: 60px;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: 'Barlow', sans-serif; background: var(--fondo); margin: 0; overflow-x: hidden; }
+
+  /* ── LOGIN ─────────────────────────────────── */
+  #loginScreen {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0d2137 0%, #1a3a5c 55%, #2563a8 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    width: 380px; padding: 48px 40px;
+    text-align: center;
+  }
+  .login-card img { height: 70px; margin-bottom: 20px; }
+  .login-card h2 { font-family: 'Barlow Condensed', sans-serif; color: var(--azul); font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+  .login-card .sub { color: #888; font-size: .85rem; margin-bottom: 28px; }
+  .login-card .form-control { border-radius: 8px; font-size:.95rem; padding:.55rem 1rem; }
+  .login-card .form-control:focus { border-color: var(--azul-med); box-shadow: 0 0 0 3px rgba(37,99,168,.15); }
+  .btn-login { background: var(--azul); color: #fff; border: none; border-radius: 8px; width: 100%; padding:.65rem; font-weight: 600; font-size: 1rem; letter-spacing: .03em; }
+  .btn-login:hover { background: var(--azul-med); }
+  .login-err { color: #dc3545; font-size:.85rem; margin-top:8px; min-height:20px; }
+
+  /* ── APP SHELL ──────────────────────────────── */
+  #appShell { display: none; min-height: 100vh; flex-direction: column; }
+  /* Header */
+  #topBar {
+    height: var(--header-h); background: var(--azul);
+    display: flex; align-items: center; padding: 0 20px;
+    position: sticky; top:0; z-index: 200;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+  #topBar img { height: 40px; margin-right: 16px; }
+  #topBar .sys-title { font-family:'Barlow Condensed',sans-serif; color:#fff; font-size:1.2rem; font-weight:700; letter-spacing:.04em; flex:1; }
+  #topBar .user-badge { background: rgba(255,255,255,.15); color:#fff; border-radius:20px; padding:4px 14px; font-size:.82rem; }
+  #topBar .btn-logout { background: none; border: 1px solid rgba(255,255,255,.4); color:#fff; border-radius:6px; padding:4px 12px; font-size:.82rem; margin-left:10px; cursor:pointer; }
+  #topBar .btn-logout:hover { background: rgba(255,255,255,.15); }
+  /* Layout */
+  #bodyWrap { display: flex; flex:1; }
+  /* Sidebar */
+  #sidebar {
+    width: var(--sidebar-w); background: #fff;
+    border-right: 1px solid #e0e6ef;
+    display: flex; flex-direction: column;
+    min-height: calc(100vh - var(--header-h));
+    position: sticky; top: var(--header-h);
+    align-self: flex-start; height: calc(100vh - var(--header-h)); overflow-y: auto;
+  }
+  .nav-section { padding: 12px 14px 4px; font-size:.7rem; font-weight:700; letter-spacing:.08em; color:#aab; text-transform: uppercase; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 18px; color: #445; font-size: .9rem; cursor: pointer;
+    border-left: 3px solid transparent; transition: all .15s;
+  }
+  .nav-item:hover { background: var(--azul-claro); color: var(--azul-med); }
+  .nav-item.active { background: var(--azul-claro); color: var(--azul); border-left-color: var(--azul-med); font-weight: 600; }
+  .nav-item i { font-size: 1.05rem; }
+
+  /* Main content */
+  #mainContent { flex: 1; padding: 24px 28px; overflow-x: auto; }
+  /* Asegurar que las tablas se vean completas en vez de recortar */
+  .table { width: 100%; }
+  .table-responsive { width: 100%; }
+  /* Te da una mejor vista en pantallas chicas sin tener que bajar zoom manualmente */
+  @media(max-width:768px){
+    .table-responsive { -webkit-overflow-scrolling: touch; }
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  .page-header h2 { font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:700; color:var(--azul); margin:0; }
+  .page-header .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* Tables */
+  .table-responsive { border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.06); background:#fff; }
+.table { margin: 0; font-size: .88rem; }
+  .table thead th { background: var(--azul); color: #fff; font-weight:600; font-size:.8rem; letter-spacing:.03em; text-transform: uppercase; white-space: nowrap; border: none; padding: 10px 12px; }
+  .table tbody tr:hover { background: var(--azul-claro); }
+  .table td { vertical-align: middle; border-color: #eef1f7; padding: 8px 10px; }
+
+  /* Ajuste SOLO para Expedientes (#tbEX) para evitar tener que hacer zoom */
+  #tbEX { font-size: .82rem; }
+  #tbEX thead th { padding: 8px 8px; font-size: .78rem; }
+  #tbEX tbody td { padding: 6px 8px; }
+  #tbEX td.text-center.text-nowrap { width: 92px; min-width: 92px; max-width: 92px; }
+
+  /* Limitar anchos de columnas largas para que la tabla quepa mejor */
+  #tbEX th:nth-child(6), #tbEX td:nth-child(6),
+  #tbEX th:nth-child(7), #tbEX td:nth-child(7),
+  #tbEX th:nth-child(8), #tbEX td:nth-child(8),
+  #tbEX th:nth-child(9), #tbEX td:nth-child(9) {
+    max-width: 170px;
+  }
+  #tbEX th:nth-child(6), #tbEX th:nth-child(7), #tbEX th:nth-child(8), #tbEX th:nth-child(9) {
+    white-space: nowrap;
+  }
+  #tbEX td:nth-child(6), #tbEX td:nth-child(7), #tbEX td:nth-child(8), #tbEX td:nth-child(9) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Mejorar el ancho del último encabezado/celda para que 'Acciones' no quede cortado */
+  #tbNS th:last-child, #tbNE th:last-child, #tbV th:last-child, #tbEX th:last-child, #tbL th:last-child, #tbSD th:last-child,
+  #bodyNS td:last-child, #bodyNE td:last-child, #bodyV td:last-child, #bodyEX td:last-child, #bodyL td:last-child, #bodySD td:last-child {
+    width: 140px;
+    min-width: 140px;
+  }
+  .btn-accion { line-height: 1; }
+  .table th, .table td { overflow: hidden; text-overflow: ellipsis; }
+  .btn-accion { background: none; border: none; padding: 3px 6px; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+  .btn-accion.edit { color: var(--azul-med); } .btn-accion.edit:hover { background: var(--azul-claro); }
+  .btn-accion.del { color: #dc3545; } .btn-accion.del:hover { background: #fde; }
+  .btn-accion.pdf { color: #16a34a; } .btn-accion.pdf:hover { background: #dcfce7; }
+  .badge-estado { font-size:.72rem; padding:3px 9px; border-radius:20px; }
+  .estado-pendiente { background:#fef3c7; color:#92400e; }
+  .estado-resuelto  { background:#dcfce7; color:#166534; }
+  .estado-proceso   { background:#dbeafe; color:#1e40af; }
+
+  /* Cards inicio */
+  .card-stat { background: #fff; border-radius: 12px; padding: 22px; box-shadow: 0 2px 10px rgba(0,0,0,.06); border-top: 4px solid var(--azul-med); }
+  .card-stat .num { font-size: 2.2rem; font-weight: 700; color: var(--azul); }
+  .card-stat .lbl { font-size: .82rem; color: #778; }
+  .card-nav { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,.06); cursor: pointer; transition: transform .15s, box-shadow .15s; text-align: center; }
+  .card-nav:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+  .card-nav i { font-size: 2rem; color: var(--azul-med); }
+  .card-nav p { margin: 8px 0 0; font-weight: 600; color: var(--azul); font-size: .9rem; }
+
+  /* PDF section */
+  .pdf-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 5px rgba(0,0,0,.05); }
+  .pdf-item i { font-size: 1.5rem; color: #dc2626; }
+  .pdf-item .fname { flex:1; font-size:.9rem; }
+  .pdf-item .pdf-actions { display: flex; gap: 6px; }
+
+  /* Modal tweaks */
+  .modal-header { background: var(--azul); color: #fff; border-radius: 10px 10px 0 0; }
+  .modal-title { font-family:'Barlow Condensed',sans-serif; font-weight:700; }
+  .btn-close { filter: invert(1); }
+  .modal-content { border-radius: 10px; }
+
+  /* Google Drive config panel */
+  .gd-config { background: #fff; border-radius:10px; padding:20px; border:1px dashed #aac; }
+  .gd-config label { font-size:.82rem; color:#556; font-weight:600; }
+  .gd-config .note { font-size:.78rem; color:#888; margin-top:4px; }
+
+  @media(max-width:768px){
+    #sidebar { display: none; }
+    #mainContent { padding: 14px; }
+    .page-header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <img src="logodt.png" alt="Logo" onerror="this.style.display='none'">
+    <h2>SISTEMA DE REGISTRO</h2>
+    <p class="sub">Dirección de Educación Técnica</p>
+    <div class="mb-3 text-start">
+      <label class="form-label fw-semibold" style="font-size:.85rem;color:#445;">Usuario</label>
+      <input type="text" id="loginUser" class="form-control" placeholder="Ingrese usuario" autocomplete="username">
+    </div>
+    <div class="mb-3 text-start">
+      <label class="form-label fw-semibold" style="font-size:.85rem;color:#445;">Contraseña</label>
+      <input type="password" id="loginPass" class="form-control" placeholder="Ingrese contraseña" autocomplete="current-password">
+    </div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn-login mt-2" onclick="doLogin()"><i class="bi bi-box-arrow-in-right me-2"></i>Ingresar</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ APP SHELL ═══════════════════ -->
+<div id="appShell">
+  <!-- Top bar -->
+  <div id="topBar">
+    <img src="logodt.png" alt="Logo" onerror="this.style.display='none'">
+    <span class="sys-title">Sistema de Registro</span>
+    <span class="user-badge" id="badgeUser"><i class="bi bi-person-fill me-1"></i><span id="topUserName"></span></span>
+    <button class="btn-logout" onclick="doLogout()"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
+  </div>
+
+  <div id="bodyWrap">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" data-page="inicio" onclick="showPage('inicio',this)"><i class="bi bi-house-fill"></i> Inicio</div>
+
+      <div class="nav-section">Notas</div>
+      <div class="nav-item" data-page="notasEntrada" onclick="showPage('notasEntrada',this)"><i class="bi bi-envelope-arrow-down-fill"></i> Notas de Entrada</div>
+      <div class="nav-item" data-page="notasSalida" onclick="showPage('notasSalida',this)"><i class="bi bi-envelope-arrow-up-fill"></i> Notas de Salida</div>
+
+      <div class="nav-section">Archivos PDF</div>
+      <div class="nav-item" data-page="pdfEntrada" onclick="showPage('pdfEntrada',this)"><i class="bi bi-file-earmark-pdf-fill"></i> PDF – Entrada</div>
+      <div class="nav-item" data-page="pdfSalida" onclick="showPage('pdfSalida',this)"><i class="bi bi-file-earmark-pdf"></i> PDF – Salida</div>
+      <div class="nav-item" data-page="pdfDisposiciones" onclick="showPage('pdfDisposiciones',this)"><i class="bi bi-file-earmark-text"></i> Disposiciones</div>
+      <div class="nav-item" data-page="pdfCirculares" onclick="showPage('pdfCirculares',this)"><i class="bi bi-file-earmark-text"></i> Circulares</div>
+      <div class="nav-item" data-page="pdfAgenda" onclick="showPage('pdfAgenda',this)"><i class="bi bi-file-earmark-text"></i> Agenda - Modelo de Nota</div>
+      <div class="nav-item" data-page="pdfLeyes" onclick="showPage('pdfLeyes',this)"><i class="bi bi-file-earmark-text"></i> Leyes y Decretos</div>
+      <div class="nav-item" data-page="pdfResolucionTP" onclick="showPage('pdfResolucionTP',this)"><i class="bi bi-file-earmark-text"></i> Resoluciones - Modalidad Técnico Profesional</div>
+      <div class="nav-item" id="navResoluciones" data-page="pdfResoluciones" onclick="showPage('pdfResoluciones',this)"><i class="bi bi-file-earmark-text"></i> Resoluciones - Situaciones Complejas - Reubicaciones - Notificaciones</div>
+
+
+
+
+      <div class="nav-section">Gestión</div>
+      <div class="nav-item" data-page="viajes" onclick="showPage('viajes',this)"><i class="bi bi-bus-front-fill"></i> Viajes</div>
+      <div class="nav-item" data-page="expedientes" onclick="showPage('expedientes',this)"><i class="bi bi-folder2-open"></i> Expedientes</div>
+      <div class="nav-item" data-page="licencias" onclick="showPage('licencias',this)"><i class="bi bi-calendar2-check-fill"></i> Licencias</div>
+      <div class="nav-item" data-page="salidasDir" onclick="showPage('salidasDir',this)"><i class="bi bi-person-walking"></i> Salidas - Equipo de Dirección Técnica</div>
+
+      <div class="nav-section admin-only">Administración</div>
+      <div class="nav-item admin-only" data-page="config" onclick="showPage('config',this)"><i class="bi bi-gear-fill"></i> Configuración</div>
+    </nav>
+
+    <!-- Main -->
+    <main id="mainContent">
+
+      <!-- ── INICIO ── -->
+      <div class="page active" id="page-inicio">
+        <div class="page-header"><h2><i class="bi bi-house-fill me-2"></i>Inicio</h2></div>
+        <div class="row g-3 mb-4" id="statsRow">
+          <div class="col-6 col-md-3"><div class="card-stat"><div class="num" id="stat0">0</div><div class="lbl">Notas de Entrada</div></div></div>
+          <div class="col-6 col-md-3"><div class="card-stat" style="border-color:#f0a500"><div class="num" id="stat1">0</div><div class="lbl">Notas de Salida</div></div></div>
+          <div class="col-6 col-md-3"><div class="card-stat" style="border-color:#16a34a"><div class="num" id="stat2">0</div><div class="lbl">Viajes</div></div></div>
+          <div class="col-6 col-md-3"><div class="card-stat" style="border-color:#7c3aed"><div class="num" id="stat3">0</div><div class="lbl">Expedientes</div></div></div>
+        </div>
+        <div class="row g-3">
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('notasEntrada',document.querySelector('[data-page=notasEntrada]'))"><i class="bi bi-envelope-arrow-down-fill"></i><p>Notas Entrada</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('notasSalida',document.querySelector('[data-page=notasSalida]'))"><i class="bi bi-envelope-arrow-up-fill"></i><p>Notas Salida</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('pdfEntrada',document.querySelector('[data-page=pdfEntrada]'))"><i class="bi bi-file-earmark-pdf-fill"></i><p>PDF Entrada</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('pdfSalida',document.querySelector('[data-page=pdfSalida]'))"><i class="bi bi-file-earmark-pdf"></i><p>PDF Salida</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('viajes',document.querySelector('[data-page=viajes]'))"><i class="bi bi-bus-front-fill"></i><p>Viajes</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('expedientes',document.querySelector('[data-page=expedientes]'))"><i class="bi bi-folder2-open"></i><p>Expedientes</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('licencias',document.querySelector('[data-page=licencias]'))"><i class="bi bi-calendar2-check-fill"></i><p>Licencias</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('salidasDir',document.querySelector('[data-page=salidasDir]'))"><i class="bi bi-person-walking"></i><p>Salidas - Equipo de Dirección Técnica</p></div></div>
+
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="abrirSime()"><i class="bi bi-globe2"></i><p>SIME</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="abrirSide()"><i class="bi bi-building"></i><p>SInIDE</p></div></div>
+
+
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('pdfDisposiciones',document.querySelector('[data-page=pdfDisposiciones]'))"><i class="bi bi-file-earmark-text"></i><p>Disposiciones</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('pdfCirculares',document.querySelector('[data-page=pdfCirculares]'))"><i class="bi bi-file-earmark-text"></i><p>Circulares</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('pdfAgenda',document.querySelector('[data-page=pdfAgenda]'))"><i class="bi bi-calendar2-check-fill"></i><p>Agenda - Modelo de Nota</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('pdfLeyes',document.querySelector('[data-page=pdfLeyes]'))"><i class="bi bi-file-earmark-text"></i><p>Leyes y Decretos</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('pdfResolucionTP',document.querySelector('[data-page=pdfResolucionTP]'))"><i class="bi bi-file-earmark-text"></i><p>Resoluciones - Modalidad T&eacute;cnico Profesional</p></div></div>
+          <div class="col-6 col-sm-4 col-md-3"><div class="card-nav" onclick="showPage('pdfResoluciones',document.querySelector('[data-page=pdfResoluciones]'))"><i class="bi bi-file-earmark-text"></i><p>Resoluciones - Situaciones Complejas - Reubicaciones - Notificaciones</p></div></div>
+
+
+        </div>
+      </div>
+
+      <!-- ── NOTAS DE ENTRADA ── -->
+      <div class="page" id="page-notasEntrada">
+        <div class="page-header">
+          <h2><i class="bi bi-envelope-arrow-down-fill me-2"></i>Notas de Entrada</h2>
+          <div class="actions">
+            <input type="text" id="buscarNE" class="form-control form-control-sm" placeholder="🔍 Buscar..." style="width:200px" oninput="filtrarTabla('tbNE','buscarNE')">
+            <button class="btn btn-primary btn-sm" onclick="abrirModal('modalNE')"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover" id="tbNE">
+            <thead><tr>
+              <th>#</th><th>Procedencia</th><th>Asunto</th><th>Área</th><th>Recibe</th>
+              <th>Fecha Ingreso</th><th>Hora</th><th>Fecha Límite</th><th>Trámite Resuelto</th>
+              <th>Fecha Resolución</th><th>Responsable</th><th>Estado</th><th>Observación</th>
+              <th>Acciones</th>
+            </tr></thead>
+            <tbody id="bodyNE"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── NOTAS DE SALIDA ── -->
+      <div class="page" id="page-notasSalida">
+        <div class="page-header">
+          <h2><i class="bi bi-envelope-arrow-up-fill me-2"></i>Notas de Salida</h2>
+          <div class="actions">
+            <input type="text" id="buscarNS" class="form-control form-control-sm" placeholder="🔍 Buscar..." style="width:200px" oninput="filtrarTabla('tbNS','buscarNS')">
+            <button class="btn btn-primary btn-sm" onclick="abrirModal('modalNS')"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover" id="tbNS">
+            <thead><tr>
+              <th>#</th><th>Destino</th><th>Entrega</th><th>Fecha Salida</th><th>Hora</th><th>Asunto</th><th>Área</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="bodyNS"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PDF ENTRADA ── -->
+      <div class="page" id="page-pdfEntrada">
+      <div class="page-header">
+        <h2><i class="bi bi-file-earmark-pdf-fill me-2"></i>Archivos PDF – Entrada</h2>
+        <div class="actions">
+          <input type="text" id="buscarPDFEnt" class="form-control form-control-sm" placeholder="🔍 Buscar PDF..." style="width:220px" oninput="filtrarPDFs('listaPdfEntrada','buscarPDFEnt')">
+          <button class="btn btn-success btn-sm" onclick="abrirModalPDF('entrada')"><i class="bi bi-upload me-1"></i>Subir PDF</button>
+        </div>
+      </div>
+        <div class="gd-config mb-3">
+          <i class="bi bi-google me-2 text-primary"></i><strong>Google Drive vinculado</strong>
+          <span class="ms-2 text-muted" style="font-size:.82rem">Carpeta ID:</span>
+          <code id="gdFolderEntrada" style="font-size:.8rem"> 1ey0iqIzX387xaXahTEXTwTpEOoFpZk_2</code>
+          <span class="note d-block mt-1">Los archivos se visualizan desde Google Drive. Para cambiar la carpeta, ir a Configuración.</span>
+        </div>
+        <div id="listaPdfEntrada"><p class="text-muted">No hay archivos cargados. Suba un PDF o vincule su Google Drive en Configuración.</p></div>
+      </div>
+
+      <!-- ── PDF SALIDA ── -->
+      <div class="page" id="page-pdfSalida">
+        <div class="page-header">
+          <h2><i class="bi bi-file-earmark-pdf me-2"></i>Archivos PDF – Salida</h2>
+          <div class="actions">
+            <input type="text" id="buscarPDFSal" class="form-control form-control-sm" placeholder="🔍 Buscar PDF..." style="width:220px" oninput="filtrarPDFs('listaPdfSalida','buscarPDFSal')">
+            <button class="btn btn-success btn-sm" onclick="abrirModalPDF('salida')"><i class="bi bi-upload me-1"></i>Subir PDF</button>
+          </div>
+        </div>
+        <div class="gd-config mb-3">
+          <i class="bi bi-google me-2 text-primary"></i><strong>Google Drive vinculado</strong>
+          <span class="ms-2 text-muted" style="font-size:.82rem">Carpeta ID:</span>
+          <code id="gdFolderSalida" style="font-size:.8rem"> 1y7oJEdLVixIYSMMmTW4Wr3oy1KZ4zcQ6</code>
+          <span class="note d-block mt-1">Los archivos se visualizan desde Google Drive. Para cambiar la carpeta, ir a Configuración.</span>
+        </div>
+        <div id="listaPdfSalida"><p class="text-muted">No hay archivos cargados. Suba un PDF o vincule su Google Drive en Configuración.</p></div>
+      </div>
+
+      <!-- ── PDF DISPOSICIONES ── -->
+      <div class="page" id="page-pdfDisposiciones">
+        <div class="page-header">
+          <h2><i class="bi bi-file-earmark-text me-2"></i>Archivos PDF – Disposiciones</h2>
+          <div class="actions">
+            <input type="text" id="buscarPDFDisp" class="form-control form-control-sm" placeholder="🔍 Buscar PDF..." style="width:220px" oninput="filtrarPDFs('listaPdfDisposiciones','buscarPDFDisp')">
+            <button class="btn btn-success btn-sm" onclick="abrirModalPDF('disposiciones')"><i class="bi bi-upload me-1"></i>Subir PDF</button>
+          </div>
+        </div>
+        <div class="gd-config mb-3">
+          <i class="bi bi-google me-2 text-primary"></i><strong>Google Drive vinculado</strong>
+          <span class="ms-2 text-muted" style="font-size:.82rem">Carpeta ID:</span>
+          <code id="gdFolderDisposiciones" style="font-size:.8rem"> 1Fphjwh65P6NPX3IjIc-gC8rm7CvB__Fe</code>
+          <span class="note d-block mt-1">Los archivos se visualizan desde Google Drive. Para cambiar la carpeta, ir a Configuración.</span>
+        </div>
+        <div id="listaPdfDisposiciones"><p class="text-muted">No hay archivos cargados. Suba un PDF o vincule su Google Drive en Configuración.</p></div>
+      </div>
+
+      <!-- ── PDF CIRCULARES ── -->
+      <div class="page" id="page-pdfCirculares">
+
+        <div class="page-header">
+          <h2><i class="bi bi-file-earmark-text me-2"></i>Archivos PDF – Circulares</h2>
+          <div class="actions">
+            <input type="text" id="buscarPDFCirc" class="form-control form-control-sm" placeholder="🔍 Buscar PDF..." style="width:220px" oninput="filtrarPDFs('listaPdfCirculares','buscarPDFCirc')">
+            <button class="btn btn-success btn-sm" onclick="abrirModalPDF('circulares')"><i class="bi bi-upload me-1"></i>Subir PDF</button>
+          </div>
+        </div>
+        <div class="gd-config mb-3">
+          <i class="bi bi-google me-2 text-primary"></i><strong>Google Drive vinculado</strong>
+          <span class="ms-2 text-muted" style="font-size:.82rem">Carpeta ID:</span>
+          <code id="gdFolderCirculares" style="font-size:.8rem"> 1JUIyusJ5UXVCzT47333CPghg4DdHX_bK</code>
+          <span class="note d-block mt-1">Los archivos se visualizan desde Google Drive. Para cambiar la carpeta, ir a Configuración.</span>
+        </div>
+        <div id="listaPdfCirculares"><p class="text-muted">No hay archivos cargados. Suba un PDF o vincule su Google Drive en Configuración.</p></div>
+      </div>
+
+
+      <!-- ── PDF AGENDA (ARCHIVOS PDF) ── -->
+      <div class="page" id="page-pdfAgenda">
+        <div class="page-header">
+          <h2><i class="bi bi-file-earmark-text me-2"></i>Archivos PDF – Agenda - Modelo de Nota</h2>
+          <div class="actions">
+            <input type="text" id="buscarPDFAgen" class="form-control form-control-sm" placeholder="🔍 Buscar (PDF/Excel/DOC)..." style="width:220px" oninput="filtrarPDFs('listaPdfAgenda','buscarPDFAgen')">
+            <button class="btn btn-success btn-sm" onclick="abrirModalPDF('agenda')"><i class="bi bi-upload me-1"></i>Subir PDF</button>
+          </div>
+        </div>
+        <div class="gd-config mb-3">
+          <i class="bi bi-google me-2 text-primary"></i><strong>Google Drive vinculado</strong>
+          <span class="ms-2 text-muted" style="font-size:.82rem">Carpeta ID:</span>
+          <code id="gdFolderAgenda" style="font-size:.8rem"> 1OWuavy_S-BS1Qf3aftgZdtg3uD5LFbxG</code>
+          <span class="note d-block mt-1">Los archivos se visualizan desde Google Drive. Para cambiar la carpeta, ir a Configuración.</span>
+        </div>
+        <div id="listaPdfAgenda"><p class="text-muted">No hay archivos cargados. Suba un PDF o vincule su Google Drive en Configuración.</p></div>
+      </div>
+
+      <!-- ── PDF LEYES Y DECRETOS (ARCHIVOS PDF) ── -->
+      <div class="page" id="page-pdfLeyes">
+        <div class="page-header">
+          <h2><i class="bi bi-file-earmark-text me-2"></i>Archivos PDF – Leyes y Decretos</h2>
+          <div class="actions">
+            <input type="text" id="buscarPDfLey" class="form-control form-control-sm" placeholder="🔍 Buscar PDF..." style="width:220px" oninput="filtrarPDFs('listaPdfLeyes','buscarPDfLey')">
+            <button class="btn btn-success btn-sm" onclick="abrirModalPDF('leyes')"><i class="bi bi-upload me-1"></i>Subir PDF</button>
+          </div>
+        </div>
+        <div class="gd-config mb-3">
+          <i class="bi bi-google me-2 text-primary"></i><strong>Google Drive vinculado</strong>
+          <span class="ms-2 text-muted" style="font-size:.82rem">Carpeta ID:</span>
+          <code id="gdFolderLeyes" style="font-size:.8rem"> 1jJIoBualbo8Smc__KCpLHHsH1Iqewsp-</code>
+          <span class="note d-block mt-1">Los archivos se visualizan desde Google Drive. Para cambiar la carpeta, ir a Configuración.</span>
+        </div>
+        <div id="listaPdfLeyes"><p class="text-muted">No hay archivos cargados. Suba un PDF o vincule su Google Drive en Configuración.</p></div>
+      </div>
+
+      <!-- ── PDF RESOLUCIONES (MODALIDAD TÉCNICO PROFESIONAL) ── -->
+      <div class="page" id="page-pdfResolucionTP">
+        <div class="page-header">
+          <h2><i class="bi bi-file-earmark-text me-2"></i>Archivos PDF – Resoluciones - Modalidad Técnico Profesional</h2>
+          <div class="actions">
+            <input type="text" id="buscarPDFRTP" class="form-control form-control-sm" placeholder="🔍 Buscar PDF..." style="width:220px" oninput="filtrarPDFs('listaPdfResolucionTP','buscarPDFRTP')">
+            <button class="btn btn-success btn-sm" onclick="abrirModalPDF('resTP')"><i class="bi bi-upload me-1"></i>Subir PDF</button>
+          </div>
+        </div>
+        <div class="gd-config mb-3">
+          <i class="bi bi-google me-2 text-primary"></i><strong>Google Drive vinculado</strong>
+          <span class="ms-2 text-muted" style="font-size:.82rem">Carpeta ID:</span>
+          <code id="gdFolderResolucionTP" style="font-size:.8rem"> 1C1hYQFYER_zTYDL4CFleULUbzJcZ9gMR</code>
+          <span class="note d-block mt-1">Los archivos se visualizan desde Google Drive. Para cambiar la carpeta, ir a Configuración.</span>
+        </div>
+        <div id="listaPdfResolucionTP"><p class="text-muted">No hay archivos cargados. Suba un PDF o vincule su Google Drive en Configuración.</p></div>
+      </div>
+
+      <!-- ── PDF RESOLUCIONES (PROTEGIDO) ── -->
+
+      <div class="page" id="page-pdfResoluciones">
+        <div class="page-header">
+          <h2><i class="bi bi-file-earmark-text me-2"></i>Resoluciones - Situaciones Complejas - Reubicaciones - Notificaciones</h2>
+          <div class="actions" style="display:none;"></div>
+        </div>
+        <div class="gd-config mb-3" id="resolucionesLockBox">
+          <strong><i class="bi bi-shield-lock me-2"></i>Sección protegida</strong>
+          <div class="note d-block mt-1">Para ver el contenido, ingrese credenciales.</div>
+        </div>
+        <div class="table-responsive" style="display:none" id="resolucionesContenido">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <input type="text" id="buscarPDFRes" class="form-control form-control-sm" placeholder="🔍 Buscar PDF..." style="width:220px" oninput="filtrarPDFs('listaPdfResoluciones','buscarPDFRes')">
+          </div>
+          <div id="listaPdfResoluciones"><p class="text-muted">Sin datos.</p></div>
+        </div>
+      </div>
+
+      <!-- ── VIAJES ── -->
+      <div class="page" id="page-viajes">
+        <div class="page-header">
+          <h2><i class="bi bi-bus-front-fill me-2"></i>Viajes</h2>
+          <div class="actions">
+            <input type="text" id="buscarV" class="form-control form-control-sm" placeholder="🔍 Buscar..." style="width:200px" oninput="filtrarTabla('tbV','buscarV')">
+            <button class="btn btn-primary btn-sm" onclick="abrirModal('modalV')"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover" id="tbV">
+            <thead><tr>
+              <th>#</th><th>Fecha Ingreso</th><th>Destino</th><th>Escuela</th><th>F. Salida</th>
+              <th>F. Regreso</th><th>Revisada</th><th>Autorizada</th><th>Observación</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="bodyV"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── EXPEDIENTES ── -->
+      <div class="page" id="page-expedientes">
+        <div class="page-header">
+          <h2><i class="bi bi-folder2-open me-2"></i>Expedientes</h2>
+          <div class="actions">
+            <input type="text" id="buscarEX" class="form-control form-control-sm" placeholder="🔍 Buscar..." style="width:200px" oninput="filtrarTabla('tbEX','buscarEX')">
+            <button class="btn btn-primary btn-sm" onclick="abrirModal('modalEX')"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover" id="tbEX">
+            <thead><tr>
+              <th>#</th><th>Fecha Ingreso</th><th>Nº Expediente</th><th>Escuela/Oficina</th><th>Fojas</th>
+              <th>Asunto/Referencia</th><th>Iniciador</th><th>Devolución/Contestación</th>
+              <th>Fecha Devolución</th><th>Responsable</th><th>Observación</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="bodyEX"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── LICENCIAS ── -->
+      <div class="page" id="page-licencias">
+        <div class="page-header">
+          <h2><i class="bi bi-calendar2-check-fill me-2"></i>Licencias</h2>
+          <div class="actions">
+            <input type="text" id="buscarL" class="form-control form-control-sm" placeholder="🔍 Buscar..." style="width:200px" oninput="filtrarTabla('tbL','buscarL')">
+            <button class="btn btn-primary btn-sm" onclick="abrirModal('modalL')"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover" id="tbL">
+            <thead><tr>
+              <th>#</th><th>Director</th><th>Escuela</th><th>Artículo</th><th>Asunto</th>
+              <th>Desde</th><th>Hasta</th><th>Firmado</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="bodyL"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── SALIDAS DIRECTORES ── -->
+      <div class="page" id="page-salidasDir">
+        <div class="page-header">
+          <h2><i class="bi bi-person-walking me-2"></i>Salidas - Equipo de Dirección Técnica</h2>
+          <div class="actions">
+            <input type="text" id="buscarSD" class="form-control form-control-sm" placeholder="🔍 Buscar..." style="width:200px" oninput="filtrarTabla('tbSD','buscarSD')">
+            <button class="btn btn-primary btn-sm" onclick="abrirModal('modalSD')"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover" id="tbSD">
+            <thead><tr>
+              <th>#</th><th>Fecha</th><th>Turno</th><th>Escuela</th><th>Director</th><th>Salidas - Equipo de Dirección Técnica</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="bodySD"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── CONFIGURACIÓN ── -->
+      <div class="page" id="page-config">
+        <div class="page-header"><h2><i class="bi bi-gear-fill me-2"></i>Configuración</h2></div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card p-3">
+              <h6 class="fw-bold mb-3"><i class="bi bi-google me-2 text-primary"></i>Google Drive – IDs de Carpetas</h6>
+              <div class="mb-2">
+                <label class="form-label" style="font-size:.82rem">Carpeta PDF Entrada</label>
+                <input type="text" class="form-control form-control-sm" id="cfgFolderEnt" placeholder="ID de carpeta Drive">
+              </div>
+              <div class="mb-2">
+                <label class="form-label" style="font-size:.82rem">Carpeta PDF Salida</label>
+                <input type="text" class="form-control form-control-sm" id="cfgFolderSal" placeholder="ID de carpeta Drive">
+              </div>
+              <div class="mb-2">
+                <label class="form-label" style="font-size:.82rem">Carpeta Disposiciones</label>
+                <input type="text" class="form-control form-control-sm" id="cfgFolderDisp" placeholder="ID de carpeta Drive">
+              </div>
+              <div class="mb-2">
+                <label class="form-label" style="font-size:.82rem">Carpeta Circulares</label>
+                <input type="text" class="form-control form-control-sm" id="cfgFolderCirc" placeholder="ID de carpeta Drive">
+              </div>
+              <div class="mb-2">
+                <label class="form-label" style="font-size:.82rem">Carpeta Agenda - Modelo de Nota</label>
+                <input type="text" class="form-control form-control-sm" id="cfgFolderAgenda" placeholder="ID de carpeta Drive">
+              </div>
+              <div class="mb-2">
+                <label class="form-label" style="font-size:.82rem">Carpeta Leyes y Decretos</label>
+                <input type="text" class="form-control form-control-sm" id="cfgFolderLeyes" placeholder="ID de carpeta Drive">
+              </div>
+              <div class="mb-2">
+                <label class="form-label" style="font-size:.82rem">Carpeta Resoluciones - Modalidad Técnico Profesional</label>
+                <input type="text" class="form-control form-control-sm" id="cfgFolderResolucionTP" placeholder="ID de carpeta Drive">
+              </div>
+
+
+              <button class="btn btn-primary btn-sm mt-1" onclick="guardarConfigDrive()"><i class="bi bi-save me-1"></i>Guardar</button>
+
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card p-3">
+              <h6 class="fw-bold mb-3"><i class="bi bi-people-fill me-2"></i>Usuarios del Sistema</h6>
+              <div class="table-responsive">
+                <table class="table table-sm" id="tbUsers">
+                  <thead><tr><th>Usuario</th><th>Rol</th><th></th></tr></thead>
+                  <tbody id="bodyUsers"></tbody>
+                </table>
+              </div>
+              <button class="btn btn-outline-primary btn-sm mt-1" onclick="abrirModal('modalUser')"><i class="bi bi-person-plus me-1"></i>Nuevo usuario</button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card p-3">
+              <h6 class="fw-bold mb-3"><i class="bi bi-database-fill me-2"></i>Datos (JSON local)</h6>
+              <p style="font-size:.82rem;color:#556">Exportá o importá los datos del sistema como archivo JSON para respaldo.</p>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="exportarDatos()"><i class="bi bi-download me-1"></i>Exportar</button>
+                <label class="btn btn-outline-secondary btn-sm mb-0">
+                  <i class="bi bi-upload me-1"></i>Importar
+                  <input type="file" accept=".json" style="display:none" onchange="importarDatos(this)">
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════ MODALS ═══════════ -->
+
+<!-- MODAL NOTAS ENTRADA -->
+<div class="modal fade" id="modalNE" tabindex="-1">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloModalNE">Nueva Nota de Entrada</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="ne_id">
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label form-label-sm">Procedencia</label><input type="text" class="form-control form-control-sm" id="ne_procedencia" placeholder="Procedencia de la nota"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Asunto</label><input type="text" class="form-control form-control-sm" id="ne_asunto" placeholder="Asunto"></div>
+        <div class="col-md-6">
+          <label class="form-label form-label-sm">Área</label>
+          <input type="text" class="form-control form-control-sm" id="ne_area" list="listAreas" placeholder="Área que recibe">
+          <datalist id="listAreas">
+            <option>DIRECCIÓN GENERAL DE EDUCACIÓN TÉCNICA Y TRABAJO</option>
+            <option>SUBDIRECCIÓN GENERAL</option>
+            <option>SECRETARÍA DE ESTADO DE EDUCACIÓN</option>
+            <option>SECRETARÍA DE ESTADO DE GESTION ADMNISTRATIVA</option>
+            <option>DIRECCIÓN DE PERSONAL</option>
+            <option>DIRECCIÓN DE NOVEDADES SALARIALES</option>
+            <option>DIRECCIÓN DE MATERIALES Y CONSTRUCCIONES ESCOLARES</option>
+            <option>SUBDIRECCIÓN DE OBRAS</option>
+            <option>DIRECCIÓN DE COORDINACIÓN ECONÓMICA DE PLANES NACIONALES</option>
+            <option>SUBDIRECCIÓN DE INFORMÁTICA</option>
+            <option>SECRETARÍA DE ESTADO DE DEPORTES</option>
+            <option>DIRECCIÓN DE DEPORTES Y EDUCACIÓN FÍSICA</option>
+            <option>SUBSECRETARÍA DE ASISTENCIA LEGAL Y TÉCNICA</option>
+            <option>DIRECCIÓN DE DESPACHO</option>
+            <option>SUBDIRECCIÓN DE DESPACHO - GESTIÓN EDUCATIVA</option>
+            <option>SUBDIRECCIÓN DE DESPACHO - GESTIÓN ADMINISTRATIVA</option>
+            <option>DIRECCIÓN DE ASUNTOS JURÍDICOS</option>
+          </datalist>
+        </div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Recibe</label><input type="text" class="form-control form-control-sm" id="ne_recibe" placeholder="Persona que recibe"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Fecha de Ingreso</label><input type="date" class="form-control form-control-sm" id="ne_fechaing"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Hora</label><input type="time" class="form-control form-control-sm" id="ne_hora"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Fecha Límite</label><input type="date" class="form-control form-control-sm" id="ne_fechalim"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Trámite Resuelto</label><input type="text" class="form-control form-control-sm" id="ne_tramiteRes" placeholder="Descripción resolución"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Fecha Resolución</label><input type="date" class="form-control form-control-sm" id="ne_fechares"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Responsable</label><input type="text" class="form-control form-control-sm" id="ne_respon" placeholder="Responsable"></div>
+        <div class="col-md-6">
+          <label class="form-label form-label-sm">Estado</label>
+          <select class="form-select form-select-sm" id="ne_estado">
+            <option value="">-- Seleccionar --</option>
+            <option>Pendiente</option><option>En Proceso</option><option>Resuelto</option>
+          </select>
+        </div>
+        <div class="col-12"><label class="form-label form-label-sm">Observación</label><textarea class="form-control form-control-sm" id="ne_observacion" rows="2" placeholder="Observaciones adicionales"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarNE()"><i class="bi bi-save me-1"></i>Guardar</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MODAL NOTAS SALIDA -->
+<div class="modal fade" id="modalNS" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloModalNS">Nueva Nota de Salida</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="ns_id">
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label form-label-sm">Destino</label><input type="text" class="form-control form-control-sm" id="ns_destino" placeholder="Destino"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Entrega</label><input type="text" class="form-control form-control-sm" id="ns_entrega" placeholder="Entregado a:"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Fecha Salida</label><input type="date" class="form-control form-control-sm" id="ns_fechasal"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Hora</label><input type="time" class="form-control form-control-sm" id="ns_hora1"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Área</label>
+          <input type="text" class="form-control form-control-sm" id="ns_area1" list="listAreas" placeholder="Área"></div>
+        <div class="col-12"><label class="form-label form-label-sm">Asunto</label><input type="text" class="form-control form-control-sm" id="ns_asunto1" placeholder="Asunto"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarNS()"><i class="bi bi-save me-1"></i>Guardar</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MODAL VIAJES -->
+<div class="modal fade" id="modalV" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloModalV">Nuevo Viaje</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="v_id">
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label form-label-sm">Fecha Ingreso</label><input type="date" class="form-control form-control-sm" id="v_fechaing"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Destino</label><input type="text" class="form-control form-control-sm" id="v_destino" placeholder="Destino del viaje"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Escuela</label><input type="text" class="form-control form-control-sm" id="v_escuela" placeholder="Escuela solicitante"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Fecha Salida</label><input type="date" class="form-control form-control-sm" id="v_fechasal"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Fecha Regreso</label><input type="date" class="form-control form-control-sm" id="v_fechareg"></div>
+        <div class="col-md-3"><label class="form-label form-label-sm">Revisada</label>
+          <select class="form-select form-select-sm" id="v_revisada"><option value="">--</option><option>Sí</option><option>No</option></select></div>
+        <div class="col-md-3"><label class="form-label form-label-sm">Autorizada</label>
+          <select class="form-select form-select-sm" id="v_autorizada"><option value="">--</option><option>Sí</option><option>No</option></select></div>
+        <div class="col-12"><label class="form-label form-label-sm">Observación</label><textarea class="form-control form-control-sm" id="v_observacion" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarV()"><i class="bi bi-save me-1"></i>Guardar</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MODAL EXPEDIENTES -->
+<div class="modal fade" id="modalEX" tabindex="-1">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloModalEX">Nuevo Expediente</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="ex_id">
+      <div class="row g-2">
+        <div class="col-md-4"><label class="form-label form-label-sm">Fecha Ingreso</label><input type="date" class="form-control form-control-sm" id="ex_fechaing"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Nº Expediente</label><input type="text" class="form-control form-control-sm" id="ex_expediente" placeholder="Número de expediente"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Escuela/Oficina</label><input type="text" class="form-control form-control-sm" id="ex_escuela" placeholder="Escuela u oficina"></div>
+        <div class="col-md-3"><label class="form-label form-label-sm">Fojas</label><input type="number" class="form-control form-control-sm" id="ex_fojas" placeholder="Cantidad"></div>
+        <div class="col-md-9"><label class="form-label form-label-sm">Asunto/Referencia</label><input type="text" class="form-control form-control-sm" id="ex_asunto" placeholder="Asunto"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Iniciador</label><input type="text" class="form-control form-control-sm" id="ex_cuerpo" placeholder="Persona/organismo iniciador"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Devolución/Contestación</label><input type="text" class="form-control form-control-sm" id="ex_devolucion" placeholder="Estado devolución"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Fecha Devolución</label><input type="date" class="form-control form-control-sm" id="ex_fechdev"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Responsable</label><input type="text" class="form-control form-control-sm" id="ex_responsable" placeholder="Responsable"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Observación</label><input type="text" class="form-control form-control-sm" id="ex_observacion" placeholder="Observación"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarEX()"><i class="bi bi-save me-1"></i>Guardar</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MODAL LICENCIAS -->
+<div class="modal fade" id="modalL" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloModalL">Nueva Licencia</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="l_id">
+      <div class="row g-2">
+        <div class="col-12">
+          <label class="form-label form-label-sm">Director</label>
+          <input type="text" class="form-control form-control-sm" id="l_director" list="listDirectores" placeholder="Nombre del director">
+          <datalist id="listDirectores">
+            <option>ING. ALBERTO VICTORIA</option><option>PROF. MANUEL ARÁOZ</option><option>PROF. CONRRADO SALTO</option>
+            <option>PROF. FAVIO TORRES</option><option>PROF. ANA HERRERA</option><option>PROF. IGNACIO RODRÍGUEZ</option>
+            <option>PROF. HÉCTOR HUGO CORREA</option><option>PROF. JULIO SUÁREZ</option><option>PROF. HÉCTOR MIGUEL SEVERO</option>
+            <option>PROF. DRA. MARÍA DE LOS ÁNGELES MENSURADO</option><option>PROF. LEONARDO OVEJERO</option>
+            <option>PROF. FACUNDO RODRIGUEZ</option><option>ING. SARA HAEL</option><option>PROF. LINO FABIAN SALAZAR</option>
+            <option>ING.CLAUDIO FERNÁNDEZ</option><option>PROF. MIGUEL GARRIDO</option><option>PROF. MANUEL ROMANO</option>
+            <option>PROF. CRISTHIAN ROMANO</option><option>ING. FABIO ALEJANDRO GIORGI</option>
+          </datalist>
+        </div>
+        <div class="col-12"><label class="form-label form-label-sm">Escuela</label><input type="text" class="form-control form-control-sm" id="l_escuela" placeholder="Nombre de la escuela"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Artículo</label><input type="text" class="form-control form-control-sm" id="l_articulo" placeholder="Art. de la norma"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Asunto</label><input type="text" class="form-control form-control-sm" id="l_asunto" placeholder="Motivo licencia"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Desde</label><input type="date" class="form-control form-control-sm" id="l_desde"></div>
+        <div class="col-md-4"><label class="form-label form-label-sm">Hasta</label><input type="date" class="form-control form-control-sm" id="l_hasta"></div>
+        <div class="col-md-4">
+          <label class="form-label form-label-sm">Firmado</label>
+          <select class="form-select form-select-sm" id="l_firmado"><option value="">--</option><option>Sí</option><option>No</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarL()"><i class="bi bi-save me-1"></i>Guardar</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MODAL SALIDAS DIRECTORES -->
+<div class="modal fade" id="modalSD" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloModalSD">Nueva Salida de Director</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="sd_id">
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label form-label-sm">Fecha</label><input type="date" class="form-control form-control-sm" id="sd_fecha"></div>
+        <div class="col-md-6">
+          <label class="form-label form-label-sm">Turno</label>
+          <select class="form-select form-select-sm" id="sd_turno"><option value="">--</option><option>Mañana</option><option>Tarde</option><option>Noche</option></select>
+        </div>
+        <div class="col-12"><label class="form-label form-label-sm">Escuela</label><input type="text" class="form-control form-control-sm" id="sd_escuela" placeholder="Escuela"></div>
+        <div class="col-12">
+          <label class="form-label form-label-sm">Director</label>
+          <input type="text" class="form-control form-control-sm" id="sd_director" list="listDirectores" placeholder="Director">
+        </div>
+        <div class="col-12"><label class="form-label form-label-sm">Informa salida a:</label><input type="text" class="form-control form-control-sm" id="sd_info" placeholder="A quién informa"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarSD()"><i class="bi bi-save me-1"></i>Guardar</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MODAL ACCESO RESOLUCIONES -->
+<div class="modal fade" id="modalAccesoResoluciones" tabindex="-1">
+  <div class="modal-dialog modal-sm"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Acceso Resoluciones</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="mb-2"><label class="form-label form-label-sm">Usuario</label><input type="text" class="form-control form-control-sm" id="res_user" placeholder="Usuario"></div>
+      <div class="mb-2"><label class="form-label form-label-sm">Contraseña</label><input type="password" class="form-control form-control-sm" id="res_pass" placeholder="Contraseña"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="validarAccesoResoluciones()"><i class="bi bi-lock me-1"></i>Ingresar</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MODAL PDF UPLOAD -->
+<div class="modal fade" id="modalPDF" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloModalPDF">Subir Archivo PDF</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="pdf_tipo">
+      <div class="mb-3">
+        <label class="form-label form-label-sm">Nombre del archivo</label>
+        <input type="text" class="form-control form-control-sm" id="pdf_nombre" placeholder="Nombre descriptivo">
+      </div>
+      <div class="mb-3">
+        <label class="form-label form-label-sm">Seleccionar archivo PDF</label>
+        <input type="file" class="form-control form-control-sm" id="pdf_file" accept=".pdf">
+      </div>
+      <div class="alert alert-info" style="font-size:.8rem">
+        <i class="bi bi-info-circle me-1"></i>
+        El archivo se guardará localmente en este sistema. Para integrarlo con Google Drive, configure el ID de carpeta en la sección <strong>Configuración</strong> y utilice el enlace de Drive correspondiente.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      <button class="btn btn-success btn-sm" onclick="subirPDF()"><i class="bi bi-upload me-1"></i>Subir</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MODAL CONFIRMAR BORRAR -->
+<div class="modal fade" id="modalBorrar" tabindex="-1">
+  <div class="modal-dialog modal-sm"><div class="modal-content">
+    <div class="modal-header bg-danger text-white"><h5 class="modal-title">Confirmar eliminación</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><p class="mb-0">¿Desea eliminar el registro seleccionado? Esta acción no se puede deshacer.</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="btnConfirmarBorrar">Eliminar</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MODAL NUEVO USUARIO -->
+<div class="modal fade" id="modalUser" tabindex="-1">
+  <div class="modal-dialog modal-sm"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Nuevo Usuario</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="mb-2"><label class="form-label form-label-sm">Usuario</label><input type="text" class="form-control form-control-sm" id="nu_user" placeholder="Nombre de usuario"></div>
+      <div class="mb-2"><label class="form-label form-label-sm">Contraseña</label><input type="password" class="form-control form-control-sm" id="nu_pass" placeholder="Contraseña"></div>
+      <div class="mb-2"><label class="form-label form-label-sm">Rol</label>
+        <select class="form-select form-select-sm" id="nu_rol"><option value="user">Usuario</option><option value="admin">Administrador</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="crearUsuario()">Crear</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- TOAST -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+  <div id="toast" class="toast align-items-center text-bg-success border-0" role="alert">
+    <div class="d-flex"><div class="toast-body" id="toastMsg">Operación exitosa</div>
+    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  SISTEMA DE REGISTRO
+//  Datos sincronizados con Google Sheets via Apps Script API
+// ═══════════════════════════════════════════════════════════════
+
+// ▼▼▼ PEGÁ AQUÍ LA URL DE TU APPS SCRIPT (después de implementar) ▼▼▼
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6Cw06fmC-LcvHmNkFzFsx5tQf3Ak5nKGSK9Jw_XK-EOpJgQ479GblUBLV97A0VRh2gw/exec';
+// Web App para listar PDFs por folderId
+// Web App para listar archivos desde una carpeta (soporta PDFs y, si agregan lógica en el Apps Script, también xlsx/docs)
+// Endpoint web app para listar archivos Excel/DOC de Agenda (mantiene action=listPdfFolder)
+// IMPORTANTE:
+// - APPS_PDF_LIST_URL: para PDFs (todas las secciones de PDF)
+// - APPS_AGENDA_DOCS_EXCEL_URL: para Excel/Word de la sección Agenda
+const APPS_PDF_LIST_URL = 'https://script.google.com/macros/s/AKfycbzxRemQwSx-8CQ6YFIOjyFg-nUyWQSOhrpwdpxFoMT0hWkNsRQCclAbJ3XUdHiWdkn-/exec';
+const APPS_AGENDA_DOCS_EXCEL_URL = 'https://script.google.com/macros/s/AKfycbzxRemQwSx-8CQ6YFIOjyFg-nUyWQSOhrpwdpxFoMT0hWkNsRQCclAbJ3XUdHiWdkn-/exec';
+
+
+
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+// ── CAPA DE COMUNICACIÓN CON GOOGLE SHEETS ─────────────────────
+
+// Indicador visual de carga
+function mostrarCargando(visible) {
+  let el = document.getElementById('loadingIndicator');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loadingIndicator';
+    el.style.cssText = `
+      position:fixed;top:0;left:0;right:0;z-index:9999;
+      background:var(--azul-med);color:#fff;
+      text-align:center;padding:6px;font-size:.82rem;
+      transition:opacity .3s;
+    `;
+    el.innerHTML = '<i class="bi bi-arrow-repeat me-2" style="animation:spin 1s linear infinite"></i>Sincronizando con Google Sheets...';
+    document.body.prepend(el);
+    const style = document.createElement('style');
+    style.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(style);
+  }
+  el.style.display = visible ? 'block' : 'none';
+}
+
+// ── CAPA DE COMUNICACIÓN CON GOOGLE SHEETS (CORREGIDA) ──
+
+async function cargarDesdeSheet() {
+// Nota: el Apps Script recibe GET con ?section=all.
+
+
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('REEMPLAZA')) return false;
+  mostrarCargando(true);
+  try {
+    // Debug: validar respuesta
+    // Nota: si el backend devuelve error, evitamos fallar silenciosamente.
+    
+    
+
+    const resp = await fetch(APPS_SCRIPT_URL + '?section=all', { 
+      method: 'GET', 
+      redirect: 'follow' 
+    });
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.error);
+
+    const d = json.data;
+
+    // --- HERRAMIENTAS DE NORMALIZACIÓN ---
+    const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
+    const toISODateOnly = (v) => {
+      if (!v) return '';
+      // Si viene en formato ISO tipo 2026-01-05T03:00:00.000Z, convertimos a YYYY-MM-DD
+      if (typeof v === 'string' && v.includes('T')) {
+        const d = new Date(v);
+        if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      }
+      return v;
+    };
+
+    const toHHMM = (v) => {
+      if (!v) return '';
+
+      // Caso Excel/Sheets: hora se guarda como fecha tipo 1899-12-30T?? o 1899-12-30 (ej: 1899-12-30)
+      // Si viene como texto con '-' tomamos la parte horaria si existe, si no devolvemos ''
+      if (typeof v === 'string') {
+        // Si viene ISO con hora
+        if (v.includes('T')) {
+          const d = new Date(v);
+          if (!isNaN(d.getTime())) {
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return `${hh}:${mm}`;
+          }
+        }
+
+        // Si viene solo como fecha Excel '1899-12-30' -> no hay hora; buscamos número tipo "11:35" ya lo devolverá
+        if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+          // No hay hora detectable
+          return '';
+        }
+
+        // Si ya viene en formato HH:mm o H:mm
+        const m1 = v.match(/^\s*(\d{1,2}):(\d{2})\s*$/);
+        if (m1) {
+          const hh = String(m1[1]).padStart(2, '0');
+          return `${hh}:${m1[2]}`;
+        }
+      }
+
+      return v;
+    };
+
+    const getV = (obj, target) => {
+      const buscador = normalizar(target);
+      const key = Object.keys(obj).find(k => normalizar(k) === buscador);
+      const v = key ? obj[key] : '';
+      // Intentar formatear hora Excel/ISO si aplica
+      if (typeof target === 'string' && normalizar(target).includes('hora')) return toHHMM(v);
+      return toISODateOnly(v);
+    };
+
+    // 1. NOTAS DE ENTRADA (Hoja: Notas)
+    if (d.notasEntrada) {
+      notasEnt = d.notasEntrada.map((r, i) => ({
+        id:          getV(r, 'ID') || (i + 1),
+        procedencia: getV(r, 'PROCEDENCIA'),
+        asunto:      getV(r, 'ASUNTO'),
+        area:        getV(r, 'AREA'),
+        recibe:      getV(r, 'RECIBE'),
+        fechaing:    getV(r, 'FECHA INGRESO') || getV(r, 'FECHA'),
+        hora:        getV(r, 'HORA'),
+        fechalim:    getV(r, 'FECHA LIMITE'),
+        tramiteRes:  getV(r, 'TRAMITE RESUELTO'),
+        fechares:    getV(r, 'FECHA RESOLUCION'),
+        respon:      getV(r, 'RESPONSABLE'),
+        estado:      getV(r, 'ESTADO') || 'PENDIENTE',
+        observacion: getV(r, 'OBSERVACION'),
+        _sheetRow:   i + 2
+      }));
+      guardarDB('reg_ne', notasEnt);
+    }
+
+    // 2. NOTAS DE SALIDA (Hoja: Salidas)
+    if (d.notasSalida) {
+      // Soporta distintos nombres de encabezados según el Sheet.
+      const getAnyV = (obj, targets) => {
+        for (const t of targets) {
+          const v = getV(obj, t);
+          if (v !== '') return v;
+        }
+        return '';
+      };
+
+      notasSal = d.notasSalida.map((r, i) => ({
+        id: getAnyV(r, ['ID', 'NÚMERO', 'NUMERO']) || (i + 1),
+
+        destino:  getAnyV(r, ['DESTINO']),
+        entrega:  getAnyV(r, ['ENTREGA', 'ENTREGADO A', 'ENTREGADO']),
+
+        fechasal: getAnyV(r, ['FECHA SALIDA', 'FECHA DE SALIDA', 'FECHA', 'FECHA_SALIDA']),
+        hora1:    getAnyV(r, ['HORA', 'HORA1', 'HORA SALIDA', 'HORARIO']),
+
+        asunto1:  getAnyV(r, ['ASUNTO', 'ASUNTO1', 'ASUNTO DESTINO']),
+        area1:    getAnyV(r, ['AREA', 'ÁREA', 'AREA1', 'DEPARTAMENTO']),
+
+        _sheetRow: i + 2
+      }));
+      guardarDB('reg_ns', notasSal);
+    }
+
+    // 3. VIAJES
+    if (d.viajes) {
+      viajes = d.viajes.map((r, i) => ({
+        id:         getV(r, 'NUMERO DE NOTA') || getV(r, 'ID') || (i + 1),
+        fechaing:   getV(r, 'FECHA DE INGRESO') || getV(r, 'FECHA'),
+        destino:    getV(r, 'DESTINO'),
+        escuela:    getV(r, 'ESCUELA'),
+        fechasal:   getV(r, 'FECHA DE SALIDA'),
+        fechareg:   getV(r, 'FECHA DE REGRESO'),
+        revisada:   getV(r, 'REVISADA'),
+        autorizada: getV(r, 'AUTORIZADA'),
+        observacion:getV(r, 'OBSERVACION'),
+        _sheetRow:  i + 2
+      }));
+      guardarDB('reg_v', viajes);
+    }
+
+    // 4. EXPEDIENTES
+    if (d.expedientes) {
+      expedient = d.expedientes.map((r, i) => ({
+        id:          getV(r, 'NUMERO') || (i + 1),
+        fechaing:    getV(r, 'FECHA DE INGRESO'),
+        expediente:  getV(r, 'NUMERO DE EXPEDIENTE'),
+        escuela:     getV(r, 'ESCUELA/OFICINA'),
+        fojas:       getV(r, 'FOJAS'),
+        asunto:      getV(r, 'ASUNTO/REFERENCIA'),
+        cuerpo:      getV(r, 'INICIADOR'),
+        devolucion:  getV(r, 'DEVOLUCION/CONTESTACION'),
+        fechdev:     getV(r, 'FECHA DE DEVOLUCION'),
+        responsable: getV(r, 'RESPONSABLE'),
+        observacion: getV(r, 'OBSERVACION'),
+        _sheetRow:   i + 2
+      }));
+      guardarDB('reg_ex', expedient);
+    }
+
+    // 5. LICENCIAS
+    if (d.licencias) {
+      licencias = d.licencias.map((r, i) => ({
+        id:       getV(r, 'NUMERO') || (i + 1),
+        director: getV(r, 'DIRECTOR'),
+        escuela:  getV(r, 'ESCUELA'),
+        articulo: getV(r, 'ARTICULO'),
+        asunto:   getV(r, 'ASUNTO'),
+        desde:    getV(r, 'DESDE'),
+        hasta:    getV(r, 'HASTA'),
+        firmado:  getV(r, 'FIRMADO'),
+        _sheetRow: i + 2
+      }));
+      guardarDB('reg_l', licencias);
+    }
+
+    // 6. SALIDAS DE DIRECTORES (Hoja: SalDirectores)
+    if (d.salidasDir) {
+      salidasD = d.salidasDir.map((r, i) => ({
+        id:       getV(r, 'NUMERO') || (i + 1),
+        fecha:    getV(r, 'FECHA'),
+        turno:    getV(r, 'TURNO'),
+        escuela:  getV(r, 'ESCUELA'),
+        director: getV(r, 'DIRECTOR'),
+        info:     getV(r, 'INFORMA SALIDA A:'),
+        _sheetRow: i + 2
+      }));
+      guardarDB('reg_sd', salidasD);
+    }
+
+    actualizarEstadisticas();
+    renderNE(); renderNS(); renderV(); renderEX(); renderL(); renderSD();
+    
+    mostrarCargando(false);
+    return true;
+  } catch (err) {
+    console.error('Error carga total:', err);
+    mostrarCargando(false);
+    return false;
+  }
+}
+
+// Enviar nueva fila al Sheet
+async function enviarAlSheet(section, rowData) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('REEMPLAZA')) return;
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      // FUNDAMENTAL: Cambiar a text/plain para evitar el preflight (OPTIONS) que bloquea CORS
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify({ action: 'append', section, rowData }),
+    });
+  } catch (err) {
+    console.error('Error al guardar en Sheet:', err);
+  }
+}
+
+// Eliminar fila del Sheet
+async function eliminarDelSheet(section, rowIndex) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('REEMPLAZA')) return;
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify({ action: 'delete', section, rowIndex }),
+    });
+  } catch (err) {
+    console.error('Error al eliminar en Sheet:', err);
+  }
+}
+
+// Actualizar fila existente en el Sheet
+async function actualizarEnSheet(section, rowIndex, rowData) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('REEMPLAZA')) return;
+  try {
+    const payload = { action: 'update', section, rowIndex, rowData };
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    // Intentar leer respuesta para debug
+    let txt = '';
+    try {
+      txt = await resp.text();
+    } catch(e) {}
+
+    if(!resp.ok) {
+      console.error('Error al actualizar en Sheet (HTTP):', resp.status, txt);
+      return;
+    }
+    // Si la respuesta no fue ok, igual logueamos
+    if(txt && !txt.includes('ok')) {
+      console.warn('Respuesta update (no ok-string):', txt);
+    }
+  } catch (err) {
+    console.error('Error al actualizar en Sheet:', err);
+  }
+}
+
+// ── DATOS DEFAULT ──────────────────────────────────────────────
+const DEFAULT_USERS = [
+  { user: 'admin', pass: 'admin123', rol: 'admin' },
+  { user: 'user',  pass: 'user123',  rol: 'user'  }
+];
+
+function cargarDB(key, def=[]) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; }
+}
+
+function guardarDB(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+// ── STORES ─────────────────────────────────────────────────────
+let users     = cargarDB('reg_users', DEFAULT_USERS);
+let notasEnt  = cargarDB('reg_ne', []);
+let notasSal  = cargarDB('reg_ns', []);
+let viajes    = cargarDB('reg_v', []);
+let expedient = cargarDB('reg_ex', []);
+let licencias = cargarDB('reg_l', []);
+let salidasD  = cargarDB('reg_sd', []);
+let pdfEnt    = cargarDB('reg_pdfent', []);
+let pdfSal    = cargarDB('reg_pdfsal', []);
+let pdfDisp   = cargarDB('reg_pdfdisp', []);
+let pdfCirc   = cargarDB('reg_pdfcirc', []);
+let pdfAgenda = cargarDB('reg_pdfagenda', []);
+let pdfLeyes  = cargarDB('reg_pdfl_leyes', []);
+let pdfResTP  = cargarDB('reg_pdf_resTP', []);
+
+let config    = cargarDB('reg_config', {
+
+  folderEnt:'1ey0iqIzX387xaXahTEXTwTpEOoFpZk_2',
+  folderSal:'1y7oJEdLVixIYSMMmTW4Wr3oy1KZ4zcQ6',
+  folderDisp:'1JUIyusJ5UXVCzT47333CPghg4DdHX_bK',
+  folderDisposiciones:'1Fphjwh65P6NPX3IjIc-gC8rm7CvB__Fe',
+  folderCirculares:'1JUIyusJ5UXVCzT47333CPghg4DdHX_bK',
+  folderAgenda:'1OWuavy_S-BS1Qf3aftgZdtg3uD5LFbxG',
+  folderLeyes:'1jJIoBualbo8Smc__KCpLHHsH1Iqewsp-',
+  folderResolucionTP:'1C1hYQFYER_zTYDL4CFleULUbzJcZ9gMR'
+});
+
+
+
+
+
+let currentUser = null;
+let pendingDeleteFn = null;
+
+function nextId(arr) { return arr.length === 0 ? 1 : Math.max(...arr.map(r=>r.id||0)) + 1; }
+
+// ── AUTH ───────────────────────────────────────────────────────
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const found = users.find(x => x.user === u && x.pass === p);
+  if (!found) { document.getElementById('loginErr').textContent = 'Usuario o contraseña incorrectos.'; return; }
+  currentUser = found;
+  document.getElementById('loginErr').textContent = '';
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'flex';
+  document.getElementById('topUserName').textContent = u;
+
+  // Permiso automático para Resoluciones: solo lourdes.
+  resolucionesAcceso = (currentUser && currentUser.user === RESOLUCIONES_USER);
+
+  // Admin-only items
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = found.rol === 'admin' ? '' : 'none';
+  });
+
+  // Cargar datos desde Google Sheets
+  cargarDesdeSheet().then(() => {
+    actualizarEstadisticas();
+    renderPDFs();
+    renderUsers();
+    loadConfigDrive();
+    // Si ya está logueado lourdes, mostramos resoluciones al entrar.
+    actualizarVistaResoluciones();
+  });
+
+  // Mostrar estadísticas iniciales mientras carga
+  actualizarEstadisticas();
+  renderPDFs();
+  renderUsers();
+  loadConfigDrive();
+  actualizarVistaResoluciones();
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ── NAVEGACIÓN ─────────────────────────────────────────────────
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  if(id==='notasEntrada') renderNE();
+  if(id==='notasSalida') renderNS();
+  if(id==='viajes') renderV();
+  if(id==='expedientes') renderEX();
+  if(id==='licencias') renderL();
+  if(id==='salidasDir') renderSD();
+  if(id==='inicio') actualizarEstadisticas();
+  if(id==='config') { renderUsers(); loadConfigDrive(); }
+  if(id==='pdfResoluciones') {
+    // solo mostrar contenido si ya se validó el acceso
+    actualizarVistaResoluciones();
+  }
+  if(id==='pdfDisposiciones') {
+    renderPDFs();
+  }
+  if(id==='pdfCirculares') {
+    renderPDFs();
+  }
+  if(id==='pdfAgenda' || id==='pdfLeyes' || id==='pdfResolucionTP') {
+    renderPDFs();
+  }
+
+}
+
+
+// ── ESTADÍSTICAS ───────────────────────────────────────────────
+function actualizarEstadisticas() {
+  document.getElementById('stat0').textContent = notasEnt.length;
+  document.getElementById('stat1').textContent = notasSal.length;
+  document.getElementById('stat2').textContent = viajes.length;
+  document.getElementById('stat3').textContent = expedient.length;
+}
+
+// ── TOAST ──────────────────────────────────────────────────────
+function mostrarToast(msg, tipo='success') {
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.className = `toast align-items-center text-bg-${tipo} border-0`;
+  document.getElementById('toastMsg').textContent = msg;
+  bootstrap.Toast.getOrCreateInstance(t, {delay:2500}).show();
+}
+
+// ── MODALES ────────────────────────────────────────────────────
+function abrirModal(id) { bootstrap.Modal.getOrCreateInstance('#'+id).show(); }
+function cerrarModal(id) { bootstrap.Modal.getOrCreateInstance('#'+id).hide(); }
+
+function abrirModalPDF(tipo){
+// Vista/alta sólo para PDF. Para Agenda (Excel/Docs) se usa solo listado desde Drive.
+document.getElementById('pdf_tipo').value = tipo;
+  const titulo = (tipo==='entrada') ? 'Entrada' :
+                 (tipo==='salida') ? 'Salida' :
+                 (tipo==='disposiciones') ? 'Disposiciones' :
+                 (tipo==='circulares') ? 'Circulares' :
+                 (tipo==='agenda') ? 'Agenda - Modelo de Nota' :
+                 (tipo==='leyes') ? 'Leyes y Decretos' :
+                 (tipo==='resTP') ? 'Resoluciones - Modalidad Técnico Profesional' : 'PDF';
+  document.getElementById('tituloModalPDF').textContent = 'Subir PDF – ' + titulo;
+
+  document.getElementById('pdf_nombre').value = '';
+  document.getElementById('pdf_file').value = '';
+  abrirModal('modalPDF');
+}
+
+// ── FILTRAR TABLA ──────────────────────────────────────────────
+function filtrarTabla(tbId, inputId) {
+  const q = document.getElementById(inputId).value.toLowerCase();
+  document.querySelectorAll('#'+tbId+' tbody tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ── CONFIRMAR BORRAR ───────────────────────────────────────────
+function confirmarBorrar(fn) {
+  pendingDeleteFn = fn;
+  abrirModal('modalBorrar');
+}
+document.getElementById('btnConfirmarBorrar').onclick = () => {
+  if(pendingDeleteFn) { pendingDeleteFn(); pendingDeleteFn=null; }
+  cerrarModal('modalBorrar');
+};
+
+// ── BADGE ESTADO ───────────────────────────────────────────────
+function badgeEstado(est) {
+  if(!est) return '';
+  const cls = est.toLowerCase().includes('resuelto') ? 'estado-resuelto'
+    : est.toLowerCase().includes('proceso') ? 'estado-proceso' : 'estado-pendiente';
+  return `<span class="badge-estado ${cls}">${est}</span>`;
+}
+
+// ══════════════════════════════════════════════════
+//  NOTAS DE ENTRADA
+// ══════════════════════════════════════════════════
+function formatHoraES(h) {
+  if (h === null || typeof h === 'undefined') return '';
+
+  // Date (si el backend devuelve Date)
+  if (h instanceof Date && !isNaN(h.getTime())) {
+    const hh24 = h.getHours();
+    const mm = String(h.getMinutes()).padStart(2,'0');
+    const suf = hh24 < 12 ? 'a. m.' : 'p. m.';
+    let hh12 = hh24 % 12;
+    if (hh12 === 0) hh12 = 12;
+    return `${String(hh12).padStart(2,'0')}:${mm} ${suf}`;
+  }
+
+  // Número: puede ser hora fraccional (0..1) o serial con fracción
+  if (typeof h === 'number' && isFinite(h)) {
+    const frac = h - Math.floor(h);
+    const secondsFromFrac = Math.round(frac * 24 * 60 * 60);
+    const hh24 = Math.floor(secondsFromFrac / 3600) % 24;
+    const mm = String(Math.floor((secondsFromFrac % 3600) / 60)).padStart(2,'0');
+
+    const suf = hh24 < 12 ? 'a. m.' : 'p. m.';
+    let hh12 = hh24 % 12;
+    if (hh12 === 0) hh12 = 12;
+    return `${String(hh12).padStart(2,'0')}:${mm} ${suf}`;
+  }
+
+  const s = String(h).trim();
+  if (!s) return '';
+
+  // HH:mm o HH:mm:ss (string)
+  const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (m) {
+    const hh24 = parseInt(m[1], 10);
+    const mm = m[2];
+    if (isNaN(hh24)) return '';
+    const suf = hh24 < 12 ? 'a. m.' : 'p. m.';
+    let hh12 = hh24 % 12;
+    if (hh12 === 0) hh12 = 12;
+    return `${String(hh12).padStart(2,'0')}:${mm} ${suf}`;
+  }
+
+  // Si llega como algo tipo "30/12/1899" evitamos mostrarlo como hora
+  if (s.includes('1899')) return '';
+
+  return s;
+}
+
+function renderNE() {
+  const tb = document.getElementById('bodyNE');
+  tb.innerHTML='';
+  const isAdmin = currentUser && currentUser.rol==='admin';
+
+  const arrEnt = [...notasEnt].sort((a,b)=>(b.id||0)-(a.id||0));
+  arrEnt.forEach(r => {
+    const tr = document.createElement('tr');
+    const horaFmt = formatHoraES(r.hora);
+
+    tr.innerHTML = `
+      <td>${r.id}</td><td>${r.procedencia||''}</td><td>${r.asunto||''}</td><td>${r.area||''}</td>
+      <td>${r.recibe||''}</td><td>${r.fechaing||''}</td><td>${horaFmt}</td><td>${r.fechalim||''}</td>
+      <td>${r.tramiteRes||''}</td><td>${r.fechares||''}</td><td>${r.respon||''}</td>
+      <td>${badgeEstado(r.estado)}</td><td>${r.observacion||''}</td>
+      <td class="text-center text-nowrap">
+        ${isAdmin?`<button class="btn-accion edit" title="Editar" onclick="editarNE(${r.id})"><i class="bi bi-pencil-square"></i></button>
+        <button class="btn-accion del" title="Eliminar" onclick="confirmarBorrar(()=>borrarNE(${r.id}))"><i class="bi bi-trash"></i></button>`:
+        '<button class="btn-accion edit" title="Ver" onclick="editarNE('+r.id+')"><i class="bi bi-eye"></i></button>'}
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+
+
+function guardarNE() {
+  const id = document.getElementById('ne_id').value;
+  const idInt = id ? parseInt(id) : null;
+
+  const reg = {
+    id: id ? parseInt(id) : nextId(notasEnt),
+    procedencia: document.getElementById('ne_procedencia').value,
+    asunto:      document.getElementById('ne_asunto').value,
+    area:        document.getElementById('ne_area').value,
+    recibe:      document.getElementById('ne_recibe').value,
+    fechaing:    document.getElementById('ne_fechaing').value,
+    hora:        document.getElementById('ne_hora').value,
+    fechalim:    document.getElementById('ne_fechalim').value,
+    tramiteRes:  document.getElementById('ne_tramiteRes').value,
+    fechares:    document.getElementById('ne_fechares').value,
+    respon:      document.getElementById('ne_respon').value,
+    estado:      document.getElementById('ne_estado').value,
+    observacion: document.getElementById('ne_observacion').value,
+  };
+
+  if(idInt) {
+    // Obtener rowIndex del Sheet antes de reemplazar el objeto
+    const prev = notasEnt.find(r => r.id === idInt);
+    const sheetRow = prev && prev._sheetRow ? prev._sheetRow : null;
+
+    const i = notasEnt.findIndex(r=>r.id===idInt);
+    // IMPORTANTE: mantener _sheetRow para futuras ediciones/borrados
+    notasEnt[i] = { ...prev, ...reg };
+
+    // Si NO tenemos sheetRow (por ejemplo datos no cargados del Sheet), hacer fallback a append
+    if(sheetRow) {
+      // IMPORTANTE: rowIndex del Sheet es la fila REAL a actualizar.
+      // Enviar payload con las columnas EXACTAS del encabezado de la hoja.
+      actualizarEnSheet('notasEntrada', sheetRow, {
+        'ID': reg.id,
+        'PROCEDENCIA': reg.procedencia,
+        'ASUNTO': reg.asunto,
+        'AREA': reg.area,
+        'RECIBE': reg.recibe,
+        'FECHA INGRESO': reg.fechaing,
+        'HORA': reg.hora,
+        'FECHA LIMITE': reg.fechalim,
+        'TRAMITE RESUELTO': reg.tramiteRes,
+        'FECHA RESOLUCION': reg.fechares,
+        'RESPONSABLE': reg.respon,
+        'ESTADO': reg.estado,
+        'OBSERVACION': reg.observacion,
+      });
+    } else {
+      // Fallback: como no sabemos qué fila del sheet corresponde, agregar como nueva.
+      enviarAlSheet('notasEntrada', {
+        'ID': reg.id,
+        'PROCEDENCIA': reg.procedencia,
+        'ASUNTO': reg.asunto,
+        'AREA': reg.area,
+        'RECIBE': reg.recibe,
+        'FECHA INGRESO': reg.fechaing,
+        'HORA': reg.hora,
+        'FECHA LIMITE': reg.fechalim,
+        'TRAMITE RESUELTO': reg.tramiteRes,
+        'FECHA RESOLUCION': reg.fechares,
+        'RESPONSABLE': reg.respon,
+        'ESTADO': reg.estado,
+        'OBSERVACION': reg.observacion,
+      });
+    }
+  } else {
+    notasEnt.push(reg);
+    // Enviar al Sheet solo filas nuevas (append)
+    enviarAlSheet('notasEntrada', {
+      '': reg.id, 'PROCEDENCIA': reg.procedencia, 'ASUNTO': reg.asunto,
+      'AREA': reg.area, 'RECIBE': reg.recibe, 'FECHA INGRESO': reg.fechaing,
+      'HORA': reg.hora, 'FECHA LIMITE': reg.fechalim, 'TRAMITE RESUELTO': reg.tramiteRes,
+      'FECHA RESOLUCION': reg.fechares, 'RESPONSABLE': reg.respon,
+      'ESTADO': reg.estado, 'OBSERVACION': reg.observacion,
+    });
+  }
+
+  guardarDB('reg_ne', notasEnt);
+  renderNE();
+  actualizarEstadisticas();
+  cerrarModal('modalNE');
+  mostrarToast(idInt?'Registro actualizado':'Registro guardado');
+}
+
+function editarNE(id) {
+  const r = notasEnt.find(x=>x.id===id);
+  document.getElementById('tituloModalNE').textContent = 'Editar Nota de Entrada';
+  document.getElementById('ne_id').value = r.id;
+  // importante: mantener también _sheetRow en el registro para update/delete
+  if(r && typeof r._sheetRow !== 'undefined') {
+    // no hace falta tocar el DOM; el update usa notasEnt
+  }
+  ['procedencia','asunto','area','recibe','fechaing','hora','fechalim','tramiteRes','fechares','respon','estado','observacion']
+    .forEach(f => document.getElementById('ne_'+f).value = r[f]||'');
+  abrirModal('modalNE');
+}
+
+function borrarNE(id) {
+  const r = notasEnt.find(x=>x.id===id);
+  const sheetRow = r && r._sheetRow ? r._sheetRow : null;
+  notasEnt = notasEnt.filter(r=>r.id!==id);
+  guardarDB('reg_ne', notasEnt);
+
+  // Sincronizar eliminación en el Sheet
+  if(sheetRow) eliminarDelSheet('notasEntrada', sheetRow);
+
+  renderNE(); actualizarEstadisticas();
+  mostrarToast('Registro eliminado','danger');
+}
+
+// ══════════════════════════════════════════════════
+//  NOTAS DE SALIDA
+// ══════════════════════════════════════════════════
+function renderNS() {
+  const tb = document.getElementById('bodyNS');
+  tb.innerHTML='';
+  const isAdmin = currentUser && currentUser.rol==='admin';
+  const arrSal = [...notasSal].sort((a,b)=>(b.id||0)-(a.id||0));
+  arrSal.forEach(r => {
+    const tr = document.createElement('tr');
+    const horaFmt = formatHoraES(r.hora1);
+    tr.innerHTML=`<td>${r.id}</td><td>${r.destino||''}</td><td>${r.entrega||''}</td>
+      <td>${r.fechasal||''}</td><td>${horaFmt}</td><td>${r.asunto1||''}</td><td>${r.area1||''}</td>
+      <td class="text-center text-nowrap">
+        ${isAdmin?`<button class="btn-accion edit" onclick="editarNS(${r.id})"><i class="bi bi-pencil-square"></i></button>
+        <button class="btn-accion del" onclick="confirmarBorrar(()=>borrarNS(${r.id}))"><i class="bi bi-trash"></i></button>`:
+        `<button class="btn-accion edit" onclick="editarNS(${r.id})"><i class="bi bi-eye"></i></button>`}
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function guardarNS() {
+  const id = document.getElementById('ns_id').value;
+  const idInt = id ? parseInt(id) : null;
+
+  const reg = {
+    id: id ? parseInt(id) : nextId(notasSal),
+    destino:document.getElementById('ns_destino').value,
+    entrega:document.getElementById('ns_entrega').value,
+    fechasal:document.getElementById('ns_fechasal').value,
+    hora1:document.getElementById('ns_hora1').value,
+    asunto1:document.getElementById('ns_asunto1').value,
+    area1:document.getElementById('ns_area1').value
+  };
+
+  if(idInt){
+    const prev = notasSal.find(r => r.id === idInt);
+    const sheetRow = prev && prev._sheetRow ? prev._sheetRow : null;
+
+    const i=notasSal.findIndex(r=>r.id===idInt);
+    // IMPORTANTE: mantener _sheetRow para futuras ediciones/borrados
+    notasSal[i] = { ...prev, ...reg };
+
+    if(sheetRow) {
+      // IMPORTANTE: rowIndex del Sheet es la fila REAL a actualizar.
+      // El Apps Script actualiza por cabeceras; aquí enviamos 'rowData' con los campos esperados.
+      actualizarEnSheet('notasSalida', sheetRow, {
+        'ID': reg.id,
+        'DESTINO': reg.destino,
+        'ENTREGA': reg.entrega,
+        'FECHA SALIDA': reg.fechasal,
+        'HORA': reg.hora1,
+        'ASUNTO': reg.asunto1,
+        'AREA': reg.area1,
+      });
+    } else {
+      // Fallback: si no tenemos rowIndex, se agrega como nueva (evita que falle)
+      enviarAlSheet('notasSalida', {
+        'ID': reg.id,
+        'DESTINO': reg.destino,
+        'ENTREGA': reg.entrega,
+        'FECHA SALIDA': reg.fechasal,
+        'HORA': reg.hora1,
+        'ASUNTO': reg.asunto1,
+        'AREA': reg.area1,
+      });
+    }
+  }
+  else{
+    notasSal.push(reg);
+    enviarAlSheet('notasSalida', {
+      '': reg.id, 'DESTINO': reg.destino, 'ENTREGA': reg.entrega,
+      'FECHA SALIDA': reg.fechasal, 'HORA': reg.hora1,
+      'ASUNTO': reg.asunto1, 'AREA': reg.area1,
+    });
+  }
+
+  guardarDB('reg_ns',notasSal);
+  renderNS();
+  actualizarEstadisticas();
+  cerrarModal('modalNS');
+  mostrarToast(idInt?'Registro actualizado':'Registro guardado');
+}
+function editarNS(id) {
+  const r=notasSal.find(x=>x.id===id);
+  document.getElementById('tituloModalNS').textContent='Editar Nota de Salida';
+  document.getElementById('ns_id').value=r.id;
+  ['destino','entrega','fechasal','hora1','asunto1','area1'].forEach(f=>document.getElementById('ns_'+f).value=r[f]||'');
+  abrirModal('modalNS');
+}
+function borrarNS(id){
+  const r = notasSal.find(x=>x.id===id);
+  const sheetRow = r && r._sheetRow ? r._sheetRow : null;
+
+  notasSal=notasSal.filter(r=>r.id!==id);
+  guardarDB('reg_ns',notasSal);
+
+  // Sincronizar eliminación en el Sheet
+  if(sheetRow) eliminarDelSheet('notasSalida', sheetRow);
+
+  renderNS();actualizarEstadisticas();mostrarToast('Eliminado','danger');
+}
+
+// ══════════════════════════════════════════════════
+//  VIAJES
+// ══════════════════════════════════════════════════
+function renderV() {
+  const tb=document.getElementById('bodyV');tb.innerHTML='';
+  const isAdmin=currentUser&&currentUser.rol==='admin';
+  viajes.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.id}</td><td>${r.fechaing||''}</td><td>${r.destino||''}</td><td>${r.escuela||''}</td>
+      <td>${r.fechasal||''}</td><td>${r.fechareg||''}</td><td>${r.revisada||''}</td><td>${r.autorizada||''}</td>
+      <td>${r.observacion||''}</td>
+      <td class="text-center text-nowrap">
+        ${isAdmin?`<button class="btn-accion edit" onclick="editarV(${r.id})"><i class="bi bi-pencil-square"></i></button>
+        <button class="btn-accion del" onclick="confirmarBorrar(()=>borrarV(${r.id}))"><i class="bi bi-trash"></i></button>`:
+        `<button class="btn-accion edit" onclick="editarV(${r.id})"><i class="bi bi-eye"></i></button>`}
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+function guardarV(){
+  const id=document.getElementById('v_id').value;
+  const reg={id:id?parseInt(id):nextId(viajes),
+    fechaing:document.getElementById('v_fechaing').value, destino:document.getElementById('v_destino').value,
+    escuela:document.getElementById('v_escuela').value, fechasal:document.getElementById('v_fechasal').value,
+    fechareg:document.getElementById('v_fechareg').value, revisada:document.getElementById('v_revisada').value,
+    autorizada:document.getElementById('v_autorizada').value, observacion:document.getElementById('v_observacion').value};
+  if(id){const i=viajes.findIndex(r=>r.id===parseInt(id));viajes[i]=reg;}
+  else{
+    viajes.push(reg);
+    enviarAlSheet('viajes', {
+      'Número de Nota': reg.id, 'Fecha de Ingreso': reg.fechaing,
+      'Destino': reg.destino, 'Escuela': reg.escuela,
+      'Fecha de Salida': reg.fechasal, 'Fecha de Regreso': reg.fechareg,
+      'Revisada': reg.revisada, 'Autorizada': reg.autorizada, 'Observacion': reg.observacion,
+    });
+  }
+  guardarDB('reg_v',viajes);renderV();actualizarEstadisticas();cerrarModal('modalV');mostrarToast(id?'Actualizado':'Guardado');
+}
+function editarV(id){
+  const r=viajes.find(x=>x.id===id);
+  document.getElementById('tituloModalV').textContent='Editar Viaje';
+  document.getElementById('v_id').value=r.id;
+  ['fechaing','destino','escuela','fechasal','fechareg','revisada','autorizada','observacion'].forEach(f=>document.getElementById('v_'+f).value=r[f]||'');
+  abrirModal('modalV');
+}
+function borrarV(id){viajes=viajes.filter(r=>r.id!==id);guardarDB('reg_v',viajes);renderV();actualizarEstadisticas();mostrarToast('Eliminado','danger');}
+
+// ══════════════════════════════════════════════════
+//  EXPEDIENTES
+// ══════════════════════════════════════════════════
+function renderEX(){
+  const tb=document.getElementById('bodyEX');tb.innerHTML='';
+  const isAdmin=currentUser&&currentUser.rol==='admin';
+  expedient.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.id}</td><td>${r.fechaing||''}</td><td>${r.expediente||''}</td><td>${r.escuela||''}</td>
+      <td>${r.fojas||''}</td><td>${r.asunto||''}</td><td>${r.cuerpo||''}</td><td>${r.devolucion||''}</td>
+      <td>${r.fechdev||''}</td><td>${r.responsable||''}</td><td>${r.observacion||''}</td>
+      <td class="text-center text-nowrap">
+        ${isAdmin?`<button class="btn-accion edit" onclick="editarEX(${r.id})"><i class="bi bi-pencil-square"></i></button>
+        <button class="btn-accion del" onclick="confirmarBorrar(()=>borrarEX(${r.id}))"><i class="bi bi-trash"></i></button>`:
+        `<button class="btn-accion edit" onclick="editarEX(${r.id})"><i class="bi bi-eye"></i></button>`}
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+function guardarEX(){
+  const id=document.getElementById('ex_id').value;
+  const reg={id:id?parseInt(id):nextId(expedient),
+    fechaing:document.getElementById('ex_fechaing').value, expediente:document.getElementById('ex_expediente').value,
+    escuela:document.getElementById('ex_escuela').value, fojas:document.getElementById('ex_fojas').value,
+    asunto:document.getElementById('ex_asunto').value, cuerpo:document.getElementById('ex_cuerpo').value,
+    devolucion:document.getElementById('ex_devolucion').value, fechdev:document.getElementById('ex_fechdev').value,
+    responsable:document.getElementById('ex_responsable').value, observacion:document.getElementById('ex_observacion').value};
+  if(id){const i=expedient.findIndex(r=>r.id===parseInt(id));expedient[i]=reg;}
+  else{
+    expedient.push(reg);
+    enviarAlSheet('expedientes', {
+      'Número': reg.id, 'Fecha de Ingreso': reg.fechaing,
+      'Numero de Expediente': reg.expediente, 'Escuela/Oficina': reg.escuela,
+      'Fojas': reg.fojas, 'Asunto/Referencia': reg.asunto,
+      'Iniciador': reg.cuerpo, 'Devolucion/Contestacion': reg.devolucion,
+      'Fecha de Devolucion/Contestacion': reg.fechdev,
+      'Responsable': reg.responsable, 'Observacion': reg.observacion,
+    });
+  }
+  guardarDB('reg_ex',expedient);renderEX();actualizarEstadisticas();cerrarModal('modalEX');mostrarToast(id?'Actualizado':'Guardado');
+}
+function editarEX(id){
+  const r=expedient.find(x=>x.id===id);
+  document.getElementById('tituloModalEX').textContent='Editar Expediente';
+  document.getElementById('ex_id').value=r.id;
+  ['fechaing','expediente','escuela','fojas','asunto','cuerpo','devolucion','fechdev','responsable','observacion']
+    .forEach(f=>document.getElementById('ex_'+f).value=r[f]||'');
+  abrirModal('modalEX');
+}
+function borrarEX(id){expedient=expedient.filter(r=>r.id!==id);guardarDB('reg_ex',expedient);renderEX();actualizarEstadisticas();mostrarToast('Eliminado','danger');}
+
+// ══════════════════════════════════════════════════
+//  LICENCIAS
+// ══════════════════════════════════════════════════
+function renderL(){
+  const tb=document.getElementById('bodyL');tb.innerHTML='';
+  const isAdmin=currentUser&&currentUser.rol==='admin';
+  licencias.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.id}</td><td>${r.director||''}</td><td>${r.escuela||''}</td><td>${r.articulo||''}</td>
+      <td>${r.asunto||''}</td><td>${r.desde||''}</td><td>${r.hasta||''}</td><td>${r.firmado||''}</td>
+      <td class="text-center text-nowrap">
+        ${isAdmin?`<button class="btn-accion edit" onclick="editarL(${r.id})"><i class="bi bi-pencil-square"></i></button>
+        <button class="btn-accion del" onclick="confirmarBorrar(()=>borrarL(${r.id}))"><i class="bi bi-trash"></i></button>`:
+        `<button class="btn-accion edit" onclick="editarL(${r.id})"><i class="bi bi-eye"></i></button>`}
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+function guardarL(){
+  const id=document.getElementById('l_id').value;
+  const reg={id:id?parseInt(id):nextId(licencias),
+    director:document.getElementById('l_director').value, escuela:document.getElementById('l_escuela').value,
+    articulo:document.getElementById('l_articulo').value, asunto:document.getElementById('l_asunto').value,
+    desde:document.getElementById('l_desde').value, hasta:document.getElementById('l_hasta').value,
+    firmado:document.getElementById('l_firmado').value};
+  if(id){const i=licencias.findIndex(r=>r.id===parseInt(id));licencias[i]=reg;}
+  else{
+    licencias.push(reg);
+    enviarAlSheet('licencias', {
+      'Número': reg.id, 'Director': reg.director, 'Escuela': reg.escuela,
+      'Articulo': reg.articulo, 'Asunto': reg.asunto,
+      'Desde': reg.desde, 'Hasta': reg.hasta, 'Firmado': reg.firmado,
+    });
+  }
+  guardarDB('reg_l',licencias);renderL();actualizarEstadisticas();cerrarModal('modalL');mostrarToast(id?'Actualizado':'Guardado');
+}
+function editarL(id){
+  const r=licencias.find(x=>x.id===id);
+  document.getElementById('tituloModalL').textContent='Editar Licencia';
+  document.getElementById('l_id').value=r.id;
+  ['director','escuela','articulo','asunto','desde','hasta','firmado'].forEach(f=>document.getElementById('l_'+f).value=r[f]||'');
+  abrirModal('modalL');
+}
+function borrarL(id){licencias=licencias.filter(r=>r.id!==id);guardarDB('reg_l',licencias);renderL();mostrarToast('Eliminado','danger');}
+
+// ══════════════════════════════════════════════════
+//  SALIDAS DIRECTORES
+// ══════════════════════════════════════════════════
+function renderSD(){
+  const tb=document.getElementById('bodySD');tb.innerHTML='';
+  const isAdmin=currentUser&&currentUser.rol==='admin';
+  salidasD.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.id}</td><td>${r.fecha||''}</td><td>${r.turno||''}</td><td>${r.escuela||''}</td>
+      <td>${r.director||''}</td><td>${r.info||''}</td>
+      <td class="text-center text-nowrap">
+        ${isAdmin?`<button class="btn-accion edit" onclick="editarSD(${r.id})"><i class="bi bi-pencil-square"></i></button>
+        <button class="btn-accion del" onclick="confirmarBorrar(()=>borrarSD(${r.id}))"><i class="bi bi-trash"></i></button>`:
+        `<button class="btn-accion edit" onclick="editarSD(${r.id})"><i class="bi bi-eye"></i></button>`}
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+function guardarSD(){
+  const id=document.getElementById('sd_id').value;
+  const reg={id:id?parseInt(id):nextId(salidasD),
+    fecha:document.getElementById('sd_fecha').value, turno:document.getElementById('sd_turno').value,
+    escuela:document.getElementById('sd_escuela').value, director:document.getElementById('sd_director').value,
+    info:document.getElementById('sd_info').value};
+  if(id){const i=salidasD.findIndex(r=>r.id===parseInt(id));salidasD[i]=reg;}
+  else{
+    salidasD.push(reg);
+    enviarAlSheet('salidasDir', {
+      'Número': reg.id, 'Fecha': reg.fecha, 'Turno': reg.turno,
+      'Escuela': reg.escuela, 'Director': reg.director, 'Informa salida a:': reg.info,
+    });
+  }
+  guardarDB('reg_sd',salidasD);renderSD();cerrarModal('modalSD');mostrarToast(id?'Actualizado':'Guardado');
+}
+function editarSD(id){
+  const r=salidasD.find(x=>x.id===id);
+  document.getElementById('tituloModalSD').textContent='Editar Salida de Director';
+  document.getElementById('sd_id').value=r.id;
+  ['fecha','turno','escuela','director','info'].forEach(f=>document.getElementById('sd_'+f).value=r[f]||'');
+  abrirModal('modalSD');
+}
+function borrarSD(id){salidasD=salidasD.filter(r=>r.id!==id);guardarDB('reg_sd',salidasD);renderSD();mostrarToast('Eliminado','danger');}
+
+// ══════════════════════════════════════════════════
+//  PDFs
+// ══════════════════════════════════════════════════
+function renderPDFs(){
+  // Mostrar primero lo que exista localmente
+  renderPDFList('listaPdfEntrada', pdfEnt, 'entrada');
+  renderPDFList('listaPdfSalida', pdfSal, 'salida');
+
+  // Disposiciones
+  renderPDFList('listaPdfDisposiciones', pdfDisp, 'disposiciones');
+  // Circulares
+  renderPDFList('listaPdfCirculares', pdfCirc, 'circulares');
+
+  // Agenda - aquí puede haber Excel y DOC (dependiendo de lo que devuelva el Apps Script)
+  renderFilesList('listaPdfAgenda', pdfAgenda, 'agenda');
+
+  // Resto
+  renderPDFList('listaPdfLeyes', pdfLeyes, 'leyes');
+  renderPDFList('listaPdfResolucionTP', pdfResTP, 'resTP');
+
+
+
+  // Luego refrescar listado desde Google Drive vía Web App (Apps Script)
+
+  // para que se vean TODOS los PDFs de la carpeta.
+  try {
+    if (config.folderEnt) listarPDFsDesdeDrive('listaPdfEntrada', config.folderEnt, 'entrada');
+    if (config.folderSal) listarPDFsDesdeDrive('listaPdfSalida', config.folderSal, 'salida');
+
+if (config.folderDisposiciones) listarPDFsDesdeDrive('listaPdfDisposiciones', config.folderDisposiciones, 'disposiciones');
+    if (config.folderCirculares) listarPDFsDesdeDrive('listaPdfCirculares', config.folderCirculares, 'circulares');
+
+    // FIX: Agenda debe usar el mismo listing que el resto (listPdfFolder) para que aparezcan los archivos.
+    // Antes se llamaba a listarAgendaDocsExcelDesdeDrive(...) pero no existe en el código actual.
+    if (config.folderAgenda) listarPDFsDesdeDrive('listaPdfAgenda', config.folderAgenda, 'agenda');
+
+    if (config.folderLeyes) listarPDFsDesdeDrive('listaPdfLeyes', config.folderLeyes, 'leyes');
+    if (config.folderResolucionTP) listarPDFsDesdeDrive('listaPdfResolucionTP', config.folderResolucionTP, 'resTP');
+
+
+  } catch(e) {}
+
+  // Además intentamos árbol de subcarpetas (si el Apps Script lo soporta)
+  // para Disposiciones.
+  listarDisposicionesDesdeDrive();
+}
+
+
+function tipoArchivoIcon_(extOrName){
+  const n = (extOrName || '').toLowerCase();
+  if(n.endsWith('.pdf')) return 'bi-file-earmark-pdf-fill';
+  if(n.endsWith('.xlsx') || n.endsWith('.xls')) return 'bi-file-earmark-excel-fill';
+  if(n.endsWith('.docx') || n.endsWith('.doc')) return 'bi-file-earmark-word-fill';
+  return 'bi-file-earmark-text-fill';
+}
+
+// Render genérico (PDF / Excel / Word) usando arr[{id,nombre,url}] + icon según extensión
+function renderFilesList(containerId, arr, tipo){
+  const c=document.getElementById(containerId);
+  if(!c) return;
+  if(!arr || arr.length===0){
+    c.innerHTML='<p class="text-muted">No hay archivos cargados. (Si vinculaste Google Drive, puede que tarde unos segundos en listarse.)</p>';
+    return;
+  }
+
+  const isAdmin=currentUser&&currentUser.rol==='admin';
+  c.innerHTML=arr.map((f)=>{
+    const nombre = f.nombre || '';
+    const icon = tipoArchivoIcon_(nombre);
+    const url = f.url || '';
+    const id = f.id;
+
+    return `
+      <div class="pdf-item" data-pdf-nombre="${escapeAttr(nombre)}">
+        <i class="bi ${icon}"></i>
+        <span class="fname">${escapeAttr(nombre)}</span>
+        <div class="pdf-actions">
+          ${url?`<a href="${escapeAttr(url)}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Ver</a>`:''}
+          ${isAdmin && typeof id !== 'undefined' ? ` <button class="btn btn-sm btn-outline-danger" onclick="borrarPDF('${tipo}',${id})"><i class="bi bi-trash"></i></button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// Mantener compatibilidad: renderPDFList ahora usa renderFilesList
+function renderPDFList(containerId, arr, tipo){
+  return renderFilesList(containerId, arr, tipo);
+}
+
+
+function escapeAttr(v){
+  return String(v)
+    .replace(/&/g,'&amp;')
+    .replace(/"/g,'"')
+    .replace(/'/g,'&#39;')
+    .replace(/</g,'<')
+    .replace(/>/g,'>');
+}
+
+function listarDisposicionesDesdeDrive(){
+  const container = document.getElementById('listaPdfDisposiciones');
+  if(!container) return;
+
+  const folderId = config && config.folderDisposiciones ? config.folderDisposiciones : '';
+
+  if(!folderId){
+    container.innerHTML = '<p class="text-muted">No se configuró la carpeta de Disposiciones.</p>';
+    return;
+  }
+
+  container.innerHTML = '<p class="text-muted"><i class="bi bi-arrow-repeat me-2" style="animation:spin 1s linear infinite"></i>Listando carpetas y PDFs...</p>';
+
+  const url = APPS_PDF_LIST_URL + '?action=listPdfFolderTree&folderId=' + encodeURIComponent(folderId);
+
+  fetch(url)
+    .then(r=>r.json())
+    .then(json=>{
+      if(!json || !json.ok) throw new Error((json && json.error) ? json.error : 'Respuesta inválida');
+
+      // Esperado por el Apps Script: { tree: [...] }
+      const tree = json.tree || [];
+      const isAdmin = currentUser && currentUser.rol === 'admin';
+
+      if(tree.length === 0){
+        // fallback: listar solo PDFs planos
+        return listarDisposicionesComoPlano_();
+      }
+
+      container.innerHTML = tree.map(group => renderDisposicionesNodo_(group, 0, isAdmin)).join('');
+    })
+    .catch(()=>{
+      // fallback: listar solo PDFs planos
+      listarDisposicionesComoPlano_();
+    });
+}
+
+function listarDisposicionesComoPlano_(){
+  // Usa el modo existente action=listPdfFolder
+  const container = document.getElementById('listaPdfDisposiciones');
+  const folderId = config && config.folderDisposiciones ? config.folderDisposiciones : '';
+
+  if(!container) return;
+
+
+  container.innerHTML = '<p class="text-muted">Listando PDFs (sin subcarpetas)...</p>';
+  if(!folderId) return;
+
+  const url = APPS_PDF_LIST_URL + '?action=listPdfFolder&folderId=' + encodeURIComponent(folderId);
+  fetch(url)
+    .then(r=>r.json())
+    .then(json=>{
+      if(!json || !json.ok) throw new Error('Respuesta inválida');
+      const files = json.files || [];
+      renderDisposicionesPlanas_(files, currentUser && currentUser.rol==='admin');
+    })
+    .catch(()=>{
+      container.innerHTML = '<p class="text-muted">Error al listar Disposiciones.</p>';
+    });
+}
+
+function renderDisposicionesPlanas_(files, isAdmin){
+  const container = document.getElementById('listaPdfDisposiciones');
+  if(!container) return;
+
+  if(!files || files.length===0){
+    container.innerHTML = '<p class="text-muted">Sin datos.</p>';
+    return;
+  }
+
+  container.innerHTML = files.map(f=>{
+    const id = f.id;
+    const showDelete = isAdmin && typeof id !== 'undefined';
+    const url = f.url || (id ? `https://drive.google.com/file/d/${id}/view` : '');
+
+    return `
+      <div class="pdf-item" data-pdf-nombre="${escapeAttr(f.name||'PDF')}">
+        <i class="bi bi-file-earmark-pdf-fill"></i>
+        <span class="fname">${escapeAttr(f.name||'PDF')}</span>
+        <div class="pdf-actions">
+          ${url ? `<a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Ver</a>` : ''}
+          ${showDelete ? `<button class="btn btn-sm btn-outline-danger" onclick="borrarPDF('disposiciones',${id})"><i class="bi bi-trash"></i></button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderDisposicionesNodo_(node, depth, isAdmin){
+  // node esperado: { name, folderId?, pdfs:[{id,name,url}], folders:[...] }
+  const name = node.name || 'Carpeta';
+  const folderIndent = depth * 14;
+
+  const htmlFolders = (node.folders || []).map(child => renderDisposicionesNodo_(child, depth+1, isAdmin)).join('');
+  const htmlPdfs = (node.pdfs || []).map(f=>{
+    const id = f.id;
+    const url = f.url || (id ? `https://drive.google.com/file/d/${id}/view` : '');
+    const showDelete = isAdmin && typeof id !== 'undefined';
+
+    return `
+      <div class="pdf-item" style="margin-left:${folderIndent+14}px" data-pdf-nombre="${escapeAttr(f.name||'PDF')}">
+        <i class="bi bi-file-earmark-pdf-fill"></i>
+        <span class="fname">${escapeAttr(f.name||'PDF')}</span>
+        <div class="pdf-actions">
+          ${url ? `<a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Ver</a>` : ''}
+          ${showDelete ? `<button class="btn btn-sm btn-outline-danger" onclick="borrarPDF('disposiciones',${id})"><i class="bi bi-trash"></i></button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="pdf-item" style="margin-left:${folderIndent}px;background:#f8fafc;border:1px solid #e5e7eb;">
+      <i class="bi bi-folder2-open" style="color:#2563a8"></i>
+      <span class="fname" style="font-weight:700">${escapeAttr(name)}</span>
+    </div>
+    ${htmlPdfs}
+    ${htmlFolders}
+  `;
+}
+
+function filtrarPDFs(containerId, inputId){
+  const inp = document.getElementById(inputId);
+  const q = (inp ? inp.value : '').toLowerCase().trim();
+  const cont=document.getElementById(containerId);
+  if(!cont) return;
+
+
+  if(!cont) return;
+  cont.querySelectorAll('.pdf-item').forEach(item=>{
+    const nombre=(item.getAttribute('data-pdf-nombre')||'').toLowerCase();
+    item.style.display = nombre.includes(q) ? '' : 'none';
+  });
+}
+
+// ── ACCESO SECCIÓN RESOLUCIONES (Usuario aparte; crea y valida usuario/contraseña) ──
+// Se valida contra credenciales almacenadas en localStorage: reg_users
+// (y si el usuario no existe, se crea automáticamente)
+const RESOLUCIONES_USER = 'lourdes';
+const RESOLUCIONES_PASS = 'lourdes26';
+let resolucionesAcceso = false;
+
+
+// Folder Google Drive para Resoluciones
+const RESOLUCIONES_FOLDER_ID = '1nVJXJgC6eo_7J_IdYAE1qNjh4c_FZvtf';
+
+function abrirModalAccesoResoluciones(){
+  // Oculto por requerimiento, pero se deja por compatibilidad.
+  // Si el usuario logueado es lourdes, se habilita automáticamente.
+  if(currentUser && currentUser.user === RESOLUCIONES_USER){
+    resolucionesAcceso = true;
+    actualizarVistaResoluciones();
+    bootstrap.Modal.getOrCreateInstance('#modalAccesoResoluciones').hide();
+    return;
+  }
+  // Si no es lourdes, no se habilita.
+  bootstrap.Modal.getOrCreateInstance('#modalAccesoResoluciones').hide();
+}
+
+function validarAccesoResoluciones(){
+  // Ya no se usa el botón de acceso visible, pero se mantiene por compatibilidad.
+  // Habilita solo si el usuario logueado coincide con lourdes.
+  if(currentUser && currentUser.user === RESOLUCIONES_USER){
+    resolucionesAcceso = true;
+    mostrarToast('Acceso concedido');
+    bootstrap.Modal.getOrCreateInstance('#modalAccesoResoluciones').hide();
+    actualizarVistaResoluciones();
+    return;
+  }
+
+  mostrarToast('Credenciales incorrectas', 'danger');
+}
+
+function abrirSime(){
+  window.open('https://sime.educaciontuc.gov.ar/', '_blank', 'noopener,noreferrer');
+}
+
+function abrirSide(){
+  window.open('https://sge.educaciontuc.gov.ar/ui3/login', '_blank', 'noopener,noreferrer');
+}
+
+function actualizarVistaResoluciones(){
+  const contenido = document.getElementById('resolucionesContenido');
+  const lockBox = document.getElementById('resolucionesLockBox');
+  if(!contenido || !lockBox) return;
+
+
+  const mostrar = !!(resolucionesAcceso && currentUser && currentUser.user === RESOLUCIONES_USER);
+
+  // Mostrar/ocultar según el usuario habilitado
+  contenido.style.display = mostrar ? '' : 'none';
+  lockBox.style.display = mostrar ? 'none' : '';
+
+  if(mostrar && (!window._resolucionesCargadas)){
+
+
+    // Por ahora no hay integración Drive específica; muestra mensaje.
+    window._resolucionesCargadas = true;
+
+    // Listar desde Google Drive usando el mismo método que PDF – Entrada
+    try {
+      if(RESOLUCIONES_FOLDER_ID) listarPDFsDesdeDrive('listaPdfResoluciones', RESOLUCIONES_FOLDER_ID, 'resoluciones');
+      else {
+        const lista = document.getElementById('listaPdfResoluciones');
+        if(lista) lista.innerHTML = '<p class="text-muted">No se configuró carpeta de Google Drive para Resoluciones.</p>';
+      }
+    } catch(e) {
+      const lista = document.getElementById('listaPdfResoluciones');
+      if(lista) lista.innerHTML = '<p class="text-muted">Error al listar PDFs de Resoluciones.</p>';
+    }
+  }
+}
+
+// Intenta listar PDFs desde una carpeta pública de Google Drive.
+// Nota: si la carpeta requiere permisos o Google no expone el listado, no va a funcionar.
+function listarPDFsDesdeDrive(containerId, folderId, tipo){
+  const c=document.getElementById(containerId);
+  if(!folderId || !c) return;
+
+  // Nota: aunque la función se llama listarPDFsDesdeDrive, ahora puede devolver PDF, Excel y DOC
+
+
+  const folderWebUrl = `https://drive.google.com/drive/folders/${folderId}`;
+
+  // Aplica listado plano (sin subcarpetas)
+  c.innerHTML = `
+    <p class="text-muted"><i class="bi bi-arrow-repeat me-2" style="animation:spin 1s linear infinite"></i>Listando PDFs desde Google Drive...</p>
+    <div class="small text-muted mt-2">Folder ID: <code>${escapeAttr(folderId)}</code></div>
+  `;
+
+  const url = APPS_PDF_LIST_URL + '?action=listPdfFolder&folderId=' + encodeURIComponent(folderId);
+
+  fetch(url)
+    .then(async r => {
+      // Debug: leemos texto aunque falle el JSON
+      const text = await r.text();
+      let json = null;
+      try { json = JSON.parse(text); } catch {}
+
+      if(!r.ok) {
+        const msg = json && json.error ? json.error : `HTTP ${r.status} ${r.statusText}`;
+        throw new Error(msg);
+      }
+
+      return json;
+    })
+    .then(json=>{
+      if(!json) throw new Error('Respuesta no JSON');
+      if(!json.ok) throw new Error((json && json.error) ? json.error : 'Respuesta inválida');
+
+      const items = (json.files || []).map((f, idx)=>({
+        id: (typeof f.id !== 'undefined' ? f.id : undefined),
+        nombre: f.name || (f.type || f.mimeType || 'Archivo ' + (idx+1)),
+        url: f.url || f.webViewLink || (f.id ? `https://drive.google.com/file/d/${f.id}/view` : '')
+      }));
+
+
+      // Render
+      renderPDFList(containerId, items, tipo);
+
+      // Fallback si el Apps Script devolvió 0 archivos
+      if(!items || items.length === 0){
+        c.innerHTML = `
+          <div class="alert alert-info" style="font-size:.85rem">
+            <div class="fw-bold"><i class="bi bi-info-circle me-2"></i>No se encontraron PDFs en el listing.</div>
+            <div class="mt-1 text-muted">Podés abrir la carpeta manualmente.</div>
+          </div>
+          <a href="${folderWebUrl}" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-folder2-open me-1"></i>Abrir carpeta
+          </a>
+        `;
+      }
+    })
+    .catch(err=>{
+      c.innerHTML = `
+        <div class="alert alert-warning" style="font-size:.85rem">
+          <div class="fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>No se pudo listar PDFs</div>
+          <div class="mt-1"><span class="text-muted">Error:</span> <code>${escapeAttr(err && err.message ? err.message : String(err))}</code></div>
+        </div>
+        <a href="${folderWebUrl}" target="_blank" class="btn btn-sm btn-outline-primary">
+          <i class="bi bi-folder2-open me-1"></i>Abrir carpeta
+        </a>
+      `;
+      console.error('listarPDFsDesdeDrive error:', err);
+    });
+}
+function subirPDF(){
+  const tipo=document.getElementById('pdf_tipo').value;
+  const nombre=document.getElementById('pdf_nombre').value.trim();
+  const fileInp=document.getElementById('pdf_file');
+  if(!nombre){mostrarToast('Ingrese un nombre','warning');return;}
+
+  const arr = tipo==='entrada'?pdfEnt :
+              (tipo==='salida'?pdfSal :
+              (tipo==='disposiciones'?pdfDisp :
+              (tipo==='circulares'?pdfCirc :
+              (tipo==='agenda'?pdfAgenda :
+              (tipo==='leyes'?pdfLeyes :
+              (tipo==='resTP'?pdfResTP : pdfDisp))))));
+
+
+
+
+
+  const reg={id:nextId(arr), nombre, url:''};
+  // Leer como data URL para previsualización local
+  if(fileInp.files[0]){
+    const reader=new FileReader();
+    reader.onload=e=>{reg.url=e.target.result; arr.push(reg); guardarDB('reg_pdf'+tipo,arr); renderPDFs(); cerrarModal('modalPDF'); mostrarToast('Archivo cargado');};
+    reader.readAsDataURL(fileInp.files[0]);
+  } else {
+    arr.push(reg); guardarDB('reg_pdf'+tipo,arr); renderPDFs(); cerrarModal('modalPDF'); mostrarToast('Archivo registrado');
+  }
+}
+function borrarPDF(tipo, id){
+  if(tipo==='entrada'){
+    pdfEnt=pdfEnt.filter(r=>r.id!==id);
+    guardarDB('reg_pdfentrada',pdfEnt);
+  } else if(tipo==='salida'){
+    pdfSal=pdfSal.filter(r=>r.id!==id);
+    guardarDB('reg_pdfsalida',pdfSal);
+  } else if(tipo==='disposiciones'){
+    pdfDisp=pdfDisp.filter(r=>r.id!==id);
+    guardarDB('reg_pdfdisp',pdfDisp);
+  } else {
+    pdfCirc=pdfCirc.filter(r=>r.id!==id);
+    guardarDB('reg_pdfcirc',pdfCirc);
+  }
+
+
+  renderPDFs(); mostrarToast('Eliminado','danger');
+}
+
+// ══════════════════════════════════════════════════
+//  CONFIGURACIÓN
+// ══════════════════════════════════════════════════
+function loadConfigDrive(){
+  document.getElementById('cfgFolderEnt').value = config.folderEnt||'';
+  document.getElementById('cfgFolderSal').value = config.folderSal||'';
+
+  const elDisp = document.getElementById('cfgFolderDisp');
+  if(elDisp) elDisp.value = config.folderDisposiciones||'';
+
+  const elCirc = document.getElementById('cfgFolderCirc');
+  if(elCirc) elCirc.value = config.folderCirculares||'';
+
+  const elAgenda = document.getElementById('cfgFolderAgenda');
+  if(elAgenda) elAgenda.value = config.folderAgenda||'';
+
+  const elLeyes = document.getElementById('cfgFolderLeyes');
+  if(elLeyes) elLeyes.value = config.folderLeyes||'';
+
+  const elResTP = document.getElementById('cfgFolderResolucionTP');
+  if(elResTP) elResTP.value = config.folderResolucionTP||'';
+
+}
+function guardarConfigDrive(){
+  config.folderEnt = document.getElementById('cfgFolderEnt').value.trim();
+  config.folderSal = document.getElementById('cfgFolderSal').value.trim();
+
+  const elDisp = document.getElementById('cfgFolderDisp');
+  if(elDisp) config.folderDisposiciones = elDisp.value.trim();
+
+  const elCirc = document.getElementById('cfgFolderCirc');
+  if(elCirc) config.folderCirculares = elCirc.value.trim();
+
+  const elAgenda = document.getElementById('cfgFolderAgenda');
+  if(elAgenda) config.folderAgenda = elAgenda.value.trim();
+
+  const elLeyes = document.getElementById('cfgFolderLeyes');
+  if(elLeyes) config.folderLeyes = elLeyes.value.trim();
+
+  const elResTP = document.getElementById('cfgFolderResolucionTP');
+  if(elResTP) config.folderResolucionTP = elResTP.value.trim();
+
+
+  guardarDB('reg_config', config);
+  renderPDFs();
+  mostrarToast('Configuración guardada');
+}
+
+
+function renderUsers(){
+  const tb=document.getElementById('bodyUsers');tb.innerHTML='';
+  users.forEach(u=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${u.user}</td><td><span class="badge ${u.rol==='admin'?'bg-primary':'bg-secondary'}">${u.rol}</span></td>
+      <td>${u.user!=='admin'?`<button class="btn btn-sm btn-outline-danger py-0" onclick="eliminarUsuario('${u.user}')"><i class="bi bi-trash"></i></button>`:''}</td>`;
+    tb.appendChild(tr);
+  });
+}
+function crearUsuario(){
+  const u=document.getElementById('nu_user').value.trim();
+  const p=document.getElementById('nu_pass').value;
+  const r=document.getElementById('nu_rol').value;
+  if(!u||!p){mostrarToast('Complete todos los campos','warning');return;}
+  if(users.find(x=>x.user===u)){mostrarToast('Ya existe ese usuario','warning');return;}
+  users.push({user:u,pass:p,rol:r});
+  guardarDB('reg_users',users);renderUsers();cerrarModal('modalUser');mostrarToast('Usuario creado');
+}
+function eliminarUsuario(u){
+  if(u===currentUser.user){mostrarToast('No puede eliminar su propio usuario','warning');return;}
+  users=users.filter(x=>x.user!==u);guardarDB('reg_users',users);renderUsers();mostrarToast('Usuario eliminado','danger');
+}
+
+// ══════════════════════════════════════════════════
+//  EXPORTAR / IMPORTAR
+// ══════════════════════════════════════════════════
+function exportarDatos(){
+  const data={notasEnt,notasSal,viajes,expedient,licencias,salidasD,pdfEnt,pdfSal,pdfDisp,pdfCirc,config};
+
+
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='registro_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+function importarDatos(inp){
+  const f=inp.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(d.notasEnt) { notasEnt=d.notasEnt; guardarDB('reg_ne',notasEnt); }
+      if(d.notasSal) { notasSal=d.notasSal; guardarDB('reg_ns',notasSal); }
+      if(d.viajes)   { viajes=d.viajes;     guardarDB('reg_v',viajes); }
+      if(d.expedient){ expedient=d.expedient;guardarDB('reg_ex',expedient); }
+      if(d.licencias){ licencias=d.licencias;guardarDB('reg_l',licencias); }
+      if(d.salidasD) { salidasD=d.salidasD; guardarDB('reg_sd',salidasD); }
+      if(d.pdfEnt)   { pdfEnt=d.pdfEnt;     guardarDB('reg_pdfentrada',pdfEnt); }
+      if(d.pdfSal)   { pdfSal=d.pdfSal;     guardarDB('reg_pdfsalida',pdfSal); }
+      if(d.pdfDisp)  { pdfDisp=d.pdfDisp;   guardarDB('reg_pdfdisp',pdfDisp); }
+      if(d.pdfCirc)  { pdfCirc=d.pdfCirc;   guardarDB('reg_pdfcirc',pdfCirc); }
+
+
+      if(d.config)   { config=d.config;      guardarDB('reg_config',config); }
+      actualizarEstadisticas(); renderPDFs(); renderUsers(); loadConfigDrive();
+      mostrarToast('Importación exitosa');
+    }catch{mostrarToast('Error al importar el archivo','danger');}
+  };
+  reader.readAsText(f);
+}
+
+// Resetear modales al abrir Agregar nuevos
+document.getElementById('modalNE').addEventListener('show.bs.modal', function(){
+  if(!document.getElementById('ne_id').value){
+    document.getElementById('tituloModalNE').textContent='Nueva Nota de Entrada';
+    document.getElementById('ne_id').value='';
+    ['procedencia','asunto','area','recibe','fechaing','hora','fechalim','tramiteRes','fechares','respon','observacion']
+      .forEach(f=>document.getElementById('ne_'+f).value='');
+    document.getElementById('ne_estado').value='';
+  }
+});
+['modalNS','modalV','modalEX','modalL','modalSD'].forEach(id=>{
+  document.getElementById(id).addEventListener('hidden.bs.modal',()=>{
+    document.querySelectorAll('#'+id+' input, #'+id+' select, #'+id+' textarea').forEach(el=>el.value='');
+  });
+});
+</script>
+</body>
+</html>
