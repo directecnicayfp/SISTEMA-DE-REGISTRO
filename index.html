@@ -639,32 +639,129 @@
     <div class="modal-body">
       <input type="hidden" id="ne_id">
       <div class="row g-2">
-        <div class="col-md-6"><label class="form-label form-label-sm">Procedencia</label><input type="text" class="form-control form-control-sm" id="ne_procedencia" placeholder="Procedencia de la nota"></div>
+        <div class="col-md-6"><label class="form-label form-label-sm">Procedencia</label><input type="text" class="form-control form-control-sm" id="ne_procedencia" placeholder="Procedencia de la nota" list="listProcedencia"></div>
+
         <div class="col-md-6"><label class="form-label form-label-sm">Asunto</label><input type="text" class="form-control form-control-sm" id="ne_asunto" placeholder="Asunto"></div>
         <div class="col-md-6">
           <label class="form-label form-label-sm">Área</label>
           <input type="text" class="form-control form-control-sm" id="ne_area" list="listAreas" placeholder="Área que recibe">
           <datalist id="listAreas">
-            <option>DIRECCIÓN GENERAL DE EDUCACIÓN TÉCNICA Y TRABAJO</option>
-            <option>SUBDIRECCIÓN GENERAL</option>
-            <option>SECRETARÍA DE ESTADO DE EDUCACIÓN</option>
-            <option>SECRETARÍA DE ESTADO DE GESTION ADMNISTRATIVA</option>
-            <option>DIRECCIÓN DE PERSONAL</option>
-            <option>DIRECCIÓN DE NOVEDADES SALARIALES</option>
-            <option>DIRECCIÓN DE MATERIALES Y CONSTRUCCIONES ESCOLARES</option>
-            <option>SUBDIRECCIÓN DE OBRAS</option>
-            <option>DIRECCIÓN DE COORDINACIÓN ECONÓMICA DE PLANES NACIONALES</option>
-            <option>SUBDIRECCIÓN DE INFORMÁTICA</option>
-            <option>SECRETARÍA DE ESTADO DE DEPORTES</option>
-            <option>DIRECCIÓN DE DEPORTES Y EDUCACIÓN FÍSICA</option>
-            <option>SUBSECRETARÍA DE ASISTENCIA LEGAL Y TÉCNICA</option>
-            <option>DIRECCIÓN DE DESPACHO</option>
-            <option>SUBDIRECCIÓN DE DESPACHO - GESTIÓN EDUCATIVA</option>
-            <option>SUBDIRECCIÓN DE DESPACHO - GESTIÓN ADMINISTRATIVA</option>
-            <option>DIRECCIÓN DE ASUNTOS JURÍDICOS</option>
+            <option>CONTABLE</option>
+            <option>EXPEDIENTE</option>
+            <option>ADMINISTRATIVO</option>
+            <option>F501</option>
+            <option>PEDAGOGIA</option>
+            <option>TITULO</option>
+            <option>FDCI</option>
+            <option>OFICIO</option>
           </datalist>
+
         </div>
-        <div class="col-md-6"><label class="form-label form-label-sm">Recibe</label><input type="text" class="form-control form-control-sm" id="ne_recibe" placeholder="Persona que recibe"></div>
+
+        <datalist id="listProcedencia">
+          <option>ESCUELA TÉCNICA Nº 1 JUAN B. ALBERDI</option>
+          <option>ESCUELA TÉCNCA Nº 1 AGUILARES</option>
+          <option>ESCUELA TÉCNICA Nº 1 BELLA VISTA</option>
+          <option>ESCUELA TÉCNICA Nº 1 CONCEPCIÓN</option>
+          <option>ESCUELA TÉCNICA Nº 1 LA COCHA</option>
+          <option>ESCUELA TÉCNICA TÉCNICA Nº 1 LASTENIA</option>
+          <option>ESCUELA TÉCNICA - CRUCERO ARA GRAL. BELGRANO</option>
+          <option>ESCUELA TÉCNICA N° 1 ING. MARÍA A. CORREA</option>
+          <option>ESCUELA TÉCNICA Nº 1 VILLA DE LEALES</option>
+          <option>ESCUELA TÉCNICA Nº 1 LULES</option>
+          <option>ESCUELA TÉCNICA Nº 1 MONTEROS</option>
+          <option>ESCUELA TÉCNICA Nº 1 RANCHILLOS</option>
+          <option>ESCUELA TÉCNICA Nº 1 RÍO SECO</option>
+          <option>ESCUELA TÉCNICA N°1 - HILDA GUERRERO DE MOLINA</option>
+          <option>ESCUELA TÉCNICA Nº 1 TRANCAS</option>
+          <option>ESCUELA TÉCNICA Nº 1 INDEPENDENCIA ARG.</option>
+          <option>ESCUELA TÉCNICA Nº 2 OBISPO COLOMBRES</option>
+          <option>ESCUELA TÉCNICA Nº 3 JUAN B. TERÁN</option>
+          <option>ESCUELA TÉCNICA Nº 4 JUAN XXIII</option>
+          <option>ESCUELA TÉCNICA Nº 5</option>
+          <option>ESCUELA TÉCNICA Nº 1 RAFAEL MARINO</option>
+          <option>ESCUELA TÉCNICA Nº 2 TAFÍ VIEJO LOMAS DE TAFÍ</option>
+          <option>ESCUELA TÉCNICA EL MOLLAR</option>
+          <option>ESCUELA AGROTÉCNICA SOLDADO CAJAL</option>
+          <option>ESCUELA AGROTÉCNICA AMAICHA DEL VALLE</option>
+          <option>ESCUELA AGROTÉCNICA AMALIA H. CASTILLO</option>
+          <option>ESCUELA AGROTÉCNICA ING .AGR. ROBERTO FALCI</option>
+          <option>ESCUELA AGROTÉCNICA ING. AGR. JORGE PALACIOS</option>
+          <option>ESCUELA AGROTÉCNICA GASTONA SUD</option>
+          <option>ESCUELA AGROTÉCNICA JUAN B. ALBERDI</option>
+          <option>ESCUELA AGROTÉCNICA JUAN MANTOVANI</option>
+          <option>ESCUELA AGROTÉCNICA LOS PIZARROS</option>
+          <option>ESCUELA AGROTÉCNICA LOS SARMIENTO</option>
+          <option>ESCUELA AGROTÉCNICA LUDOVICO TUSEK</option>
+          <option>ESCUELA AGROTÉCNICA MARIANO RAMOS</option>
+          <option>ESCUELA AGROTÉCNICA MIGUEL A. TORRES</option>
+          <option>ESCUELA AGROTÉCNICA SIMOCA</option>
+          <option>ESCUELA AGROTÉCNICA TRANCAS</option>
+          <option>CENTRO DE EDUCACION AGRICOLA - LAS TALITAS</option>
+          <option>CEP EMETA LAS CEJAS</option>
+          <option>CEP EMETA SANTA ANA</option>
+          <option>CEP EMETA TRANCAS - ABSORBIDO - ESCUELA AGROTECNICA DE TRANCAS</option>
+          <option>CFP HUMBERTO REYES - AGUILARES</option>
+          <option>CFP Nº 1 CAPITAL</option>
+          <option>CFP Nº 1 VIRGEN DE FATIMA-CONCEPCION</option>
+          <option>CFP Nº 2 CAPITAL</option>
+          <option>MISION CULT. RUR Y DOM Nº 11</option>
+          <option>MISION CULT. RUR Y DOM Nº 21</option>
+          <option>MISION MONOTECNICA Nº 11</option>
+          <option>MISION MONOTECNICA Nº 43</option>
+          <option>C.F.P. Nº 3</option>
+          <option>MISION MONOTECNICA Nº72</option>
+          <option>CFP ANEXO ESC TEC AGUILARES</option>
+          <option>ESC TEC Nº1 HILDA GUERRERO DE MOLINA ANEXO CFP-SANTA LUCIA</option>
+          <option>CFP ANEXO AGROT AMAICHA DEL VALLE</option>
+          <option>CFP ANEXO ESC TEC Nº1 LASTENIA</option>
+          <option>CFP ANEXO ESC TEC Nº 1 BELLA VISTA</option>
+          <option>CENTRO DE EDUCACION AGRICOLA-ANEXO CFP BELLA VISTA</option>
+          <option>AULA MOVIL Nº 1</option>
+          <option>AULA MOVIL Nº 2</option>
+          <option>AULA MOVIL Nº 3</option>
+          <option>AULA MOVIL Nº 4</option>
+          <option>AULA MOVIL Nº 5</option>
+          <option>AULA MOVIL Nº 6</option>
+          <option>AULA MOVIL Nº 7</option>
+          <option>AULA MOVIL Nº 8</option>
+          <option>DIRECCION DE EDUCACION INICIAL</option>
+          <option>DIRECCION DE EDUCACION PRIMARIA</option>
+          <option>DIRECCION DE EDUCACION SECUNDARIA</option>
+          <option>DIRECCION DE EDUCACION PRIVADO</option>
+          <option>DIRECCION DE EDUCACION SUPERIOR, ARTISTICA Y NO UNIVERSITARIA</option>
+          <option>DIRECCION DE EDUCACION DE JOVENES Y ADULTOS</option>
+          <option>SECRETARIA DE ESTADO DE EDUCACION</option>
+          <option>COORDINACION DE PLANES NACIONALES</option>
+          <option>DIRECCION DE AUDITORIA INTERNA</option>
+          <option>TESORERIA - INSUMOS Y APRESTAMIENTOS</option>
+          <option>DIRECCION DE ASUNTOS JURIDICOS</option>
+          <option>SASE - GPI</option>
+          <option>MEDIACION</option>
+          <option>PLANEAMIENTO Y CALIDAD EDUCATIVA</option>
+          <option>INFRAESTRUCTURA</option>
+          <option>BIENES PATRIMONIALES</option>
+          <option>NOVEDADES SALARIALES</option>
+          <option>MESA DE ENTRADA</option>
+          <option>DIRECCION DE EDUCACION FISICA</option>
+          <option>PRESUPUESTO</option>
+        </datalist>
+
+        <div class="col-md-6"><label class="form-label form-label-sm">Recibe</label><input type="text" class="form-control form-control-sm" id="ne_recibe" placeholder="Persona que recibe" list="listRecibe"></div>
+        <datalist id="listRecibe">
+          <option>JUAN PABLO SIGONA</option>
+          <option>DANIEL PINTO</option>
+          <option>STELLA ISCAZATTI</option>
+          <option>JULIETA ALBORNOZ</option>
+          <option>CRISTINA GONZALEZ</option>
+          <option>MARCO SORIA</option>
+          <option>EXEQUIEL RODRIGUEZ</option>
+          <option>DIEGO HERRERA</option>
+          <option>LUIS MOSCOL</option>
+          <option>JUAN SALAZAR</option>
+          <option>NICOLAS DIAZ</option>
+          <option>ENRIQUE TAPIA</option>
+        </datalist>
         <div class="col-md-4"><label class="form-label form-label-sm">Fecha de Ingreso</label><input type="date" class="form-control form-control-sm" id="ne_fechaing"></div>
         <div class="col-md-4"><label class="form-label form-label-sm">Hora</label><input type="time" class="form-control form-control-sm" id="ne_hora"></div>
         <div class="col-md-4"><label class="form-label form-label-sm">Fecha Límite</label><input type="date" class="form-control form-control-sm" id="ne_fechalim"></div>
@@ -687,7 +784,7 @@
     </div>
   </div></div>
 </div>
-
+  
 <!-- MODAL NOTAS SALIDA -->
 <div class="modal fade" id="modalNS" tabindex="-1">
   <div class="modal-dialog"><div class="modal-content">
